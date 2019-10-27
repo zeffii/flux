@@ -6,7 +6,9 @@
 # License-Filename: LICENSE
 
 import bpy
+import flux
+from flux import nodes
 from flux.core import sockets, node_tree, node_categories, module_functions
 
-modules = [sockets, node_tree, flux.nodes, node_categories]
+modules = [sockets, node_tree, nodes, node_categories]
 register, unregister = module_functions.register_modules(modules)

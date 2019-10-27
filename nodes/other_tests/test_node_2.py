@@ -33,5 +33,4 @@ class FluxTestNode2(FluxCustomTreeNode):
         return "I am a custom node"
 
 
-classes = [FluxTestNode2]
-register, unregister = bpy.utils.register_classes_factory(classes)
+register, unregister = bpy.utils.register_classes_factory([FluxTestNode2])

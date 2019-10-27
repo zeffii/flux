@@ -8,5 +8,5 @@
 import bpy
 from flux.core import sockets, node_tree, node_categories, module_functions
 
-modules = [sockets, node_tree, node_categories]
+modules = [sockets, node_tree, flux.nodes, node_categories]
 register, unregister = module_functions.register_modules(modules)

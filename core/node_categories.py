@@ -23,11 +23,11 @@ node_categories = [
         NodeItem("FluxTestNode"),
     ]),
     FluxNodeCategory('OTHERNODES', "Other Nodes", items=[
-        NodeItem("FluxTestNode", label="Node A", settings={
+        NodeItem("FluxTestNode2", label="Node A", settings={
             "my_string_prop": repr("Lorem ipsum dolor sit amet"),
             "my_float_prop": repr(1.0),
         }),
-        NodeItem("FluxTestNode", label="Node B", settings={
+        NodeItem("FluxTestNode3", label="Node B", settings={
             "my_string_prop": repr("consectetur adipisicing elit"),
             "my_float_prop": repr(2.0),
         }),

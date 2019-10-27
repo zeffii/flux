@@ -14,14 +14,14 @@ class FluxCustomTree(NodeTree):
 
 # Mix-in class for all custom nodes in this tree type.
 # Defines a poll function to enable instantiation.
-class FluxCustomTreeNode:
+class FluxCustomTreeNode(Node):
     @classmethod
     def poll(cls, ntree):
         return ntree.bl_idname == 'FluxCustomTree'
 
 
 # Derived from the Node base type.
-class FluxTestNode(Node, FluxCustomTreeNode):
+class FluxTestNode(FluxCustomTreeNode):
     bl_label = "Custom Node"
     bl_icon = 'SOUND'
 

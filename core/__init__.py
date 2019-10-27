@@ -5,13 +5,8 @@
 # SPDX-License-Identifier: GPL3
 # License-Filename: LICENSE
 
-from flux.core import sockets, node_tree, node_categories
+import bpy
+from flux.core import sockets, node_tree, node_categories, module_functions
 
 modules = [sockets, node_tree, node_categories]
-def register():
-    for module in modules:
-        module.register()
-
-def unregister():
-    for module in reversed(modules):
-        module.unregister()
+register, unregister = module_functions.register_modules(modules)

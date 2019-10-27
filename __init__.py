@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: GPL3
 # License-Filename: LICENSE
 
+import importlib
+import sys
+import bpy
 
 bl_info = {
     "name": "flux",
@@ -19,24 +22,8 @@ bl_info = {
     "tracker_url": "https://github.com/zeffii/flux/issues"
 }
 
-
-import sys
-import importlib
-
-# pylint: disable=E0602
-# pylint: disable=C0413
-# pylint: disable=C0412
-
 # force root module name
 sys.modules["flux"] = sys.modules[__name__]
 
-import bpy
-
-
-def register():
-    import flux
-    flux.core.register()
-
-def unregister():
-    import flux
-    flux.core.unregister()
+import flux
+from flux.core import register, unregister

@@ -1,3 +1,5 @@
+import flux
+
 def register():
     from flux.core.sockets import register as sockets_register
     from flux.core.node_tree import register as ntree_register

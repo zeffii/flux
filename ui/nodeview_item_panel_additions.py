@@ -4,16 +4,22 @@ import bpy
 def context_poll(context):
     return context.space_data.tree_type in {'FluxCustomTree'} and context.active_node
 
-def draw_copy_idname(row, node):
+def draw_copy_idname(layout, node):
+    row = layout.row(align=True)
+    
     col1 = row.column()
     col1.label(text="ID name")
+    
     col2 = row.column()
     col2.enabled = False
     col2.prop(node, "bl_idname", text="")  # add copy operator on this row
+    
     col3 = row.column()
     op2 = col3.operator("node.copy_text_to_clipboard", text="", icon="TEXT")
     op2.string_to_copy = node.bl_idname
 
+def draw_node_path(layout, node):
+    layout.label(text=node.__module__.replace('flux.nodes.', '').replace('.', ' \\ '))
 
 def flux_node_info_draw(self, context):
     if not context_poll(context):
@@ -22,10 +28,9 @@ def flux_node_info_draw(self, context):
     node = context.active_node
     layout = self.layout
 
-    row = layout.row(align=True)
-    draw_copy_idname(row, node)
+    draw_copy_idname(layout, node)
+    draw_node_path(layout, node)
 
-    layout.label(text=node.__module__.replace('flux.nodes.', '').replace('.', ' \\ '))
 
 
 def register():

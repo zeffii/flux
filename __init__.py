@@ -7,7 +7,6 @@
 
 import importlib
 import sys
-import bpy
 
 bl_info = {
     "name": "flux",
@@ -26,4 +25,10 @@ bl_info = {
 sys.modules["flux"] = sys.modules[__name__]
 
 import flux
+reload_event = "bpy" in locals()
+
+if reload_event:
+    print("flux: re importing... todo")
+
+import bpy
 from flux.core import register, unregister

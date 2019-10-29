@@ -18,4 +18,12 @@ flux_modules = [
     nodeview_item_panel_additions
 ]
 
+"""
+   # reload base modules
+    _ = [importlib.reload(im) for im in imported_modules]
+
+    # reload nodes
+    _ = [importlib.reload(node) for node in node_list]
+"""
+
 register, unregister = module_functions.register_modules(flux_modules)

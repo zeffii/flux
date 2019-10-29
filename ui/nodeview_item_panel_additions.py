@@ -11,9 +11,12 @@ def flux_node_info_draw(self, context):
     node = context.active_node
     layout = self.layout
     bl_idname = node.bl_idname
-    row = layout.row()
-    row.enabled = False
-    row.prop(node, "bl_idname")  # add copy operator on this row
+    row = layout.row(align=True)
+    col1 = row.column()
+    col1.label(text="ID name")
+    col2 = row.column()
+    col2.enabled = False
+    col2.prop(node, "bl_idname", text="")  # add copy operator on this row
     layout.label(text=node.__module__.replace('flux.nodes.', '').replace('.', ' \\ '))
 
 

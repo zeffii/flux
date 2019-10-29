@@ -28,7 +28,8 @@ import flux
 reload_event = "bpy" in locals()
 
 if reload_event:
-    print("flux: re importing... todo")
+    from flux.core import perform_import_reload
+    perform_import_reload()
 
 import bpy
 from flux.core import register, unregister

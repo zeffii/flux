@@ -18,12 +18,13 @@ flux_modules = [
     nodeview_item_panel_additions
 ]
 
-"""
-   # reload base modules
-    _ = [importlib.reload(im) for im in imported_modules]
-
-    # reload nodes
+def perform_import_reload():
+    print("flux: starting reload with importlib")
+    import importlib
+    from flux.core import flux_modules
+    from flux.nodes import node_list
+    _ = [importlib.reload(im) for im in flux_modules]
     _ = [importlib.reload(node) for node in node_list]
-"""
+    print('flux: performed importlib reload on flux_modules and node_list, seems ok')
 
 register, unregister = module_functions.register_modules(flux_modules)

@@ -24,7 +24,7 @@ class FluxTestNode(FluxCustomTreeNode):
         print("Removing node ", self, ", Goodbye!")
 
     def draw_buttons(self, context, layout):
-        layout.label(text="Node settings")
+        layout.label(text="Node settings------------")
         layout.prop(self, "my_float_prop")
 
     def draw_buttons_ext(self, context, layout):

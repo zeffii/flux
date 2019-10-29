@@ -5,10 +5,17 @@
 # SPDX-License-Identifier: GPL3
 # License-Filename: LICENSE
 
+# pylint: disable=c0103
+
 import bpy
 import flux
 from flux import nodes
 from flux.core import sockets, node_tree, node_categories, module_functions
+from flux.ui import nodeview_item_panel_additions
 
-modules = [sockets, node_tree, nodes, node_categories]
-register, unregister = module_functions.register_modules(modules)
+flux_modules = [
+    sockets, node_tree, nodes, node_categories,
+    nodeview_item_panel_additions
+]
+
+register, unregister = module_functions.register_modules(flux_modules)

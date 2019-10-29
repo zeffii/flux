@@ -10,7 +10,3 @@ def register_modules(modules):
             module.unregister()
 
     return register, unregister
-
-
-def register_nodes(nodes):
-    ...

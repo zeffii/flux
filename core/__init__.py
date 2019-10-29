@@ -11,6 +11,7 @@ import bpy
 import flux
 from flux import nodes
 from flux.core import sockets, node_tree, node_categories, module_functions
+from flux.core.operators import text_copy_to_clipboard  # this will need to be automatic...
 from flux.ui import nodeview_item_panel_additions
 
 flux_modules = [

@@ -10,7 +10,8 @@ def draw_copy_idname(row, node):
     col2 = row.column()
     col2.enabled = False
     col2.prop(node, "bl_idname", text="")  # add copy operator on this row
-    op2 = col2.operator("node.copy_text_to_clipboard", text="", icon="TEXT")
+    col3 = row.column()
+    op2 = col3.operator("node.copy_text_to_clipboard", text="", icon="TEXT")
     op2.string_to_copy = node.bl_idname
 
 

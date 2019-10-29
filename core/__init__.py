@@ -16,7 +16,8 @@ from flux.ui import nodeview_item_panel_additions
 
 flux_modules = [
     sockets, node_tree, nodes, node_categories,
-    nodeview_item_panel_additions
+    nodeview_item_panel_additions,
+    text_copy_to_clipboard
 ]
 
 def perform_import_reload():

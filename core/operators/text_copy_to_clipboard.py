@@ -11,6 +11,7 @@ class FluxCopyTextToClipboard(bpy.types.Operator):
     def execute(self, context):
         str_lines = self.string_to_copy
         bpy.context.window_manager.clipboard = str_lines
+        return {'FINISHED'}
 
 
 classes = [FluxCopyTextToClipboard]

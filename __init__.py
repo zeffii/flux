@@ -1,4 +1,4 @@
-# This file is part of project Sverchok. It's copyrighted by the contributors
+# This file is part of project flux. It's copyrighted by the contributors
 # recorded in the version control history of the file, available from
 # its original location https://github.com/zeffii/flux/commit/master
 #  
@@ -21,15 +21,15 @@ bl_info = {
     "tracker_url": "https://github.com/zeffii/flux/issues"
 }
 
+reload_event = 'flux' in locals()
+
 # force root module name
 sys.modules["flux"] = sys.modules[__name__]
 
 import flux
-reload_event = "bpy" in locals()
-
 if reload_event:
+    print('flux: detected reload event')
     from flux.core import perform_import_reload
     perform_import_reload()
 
-import bpy
 from flux.core import register, unregister

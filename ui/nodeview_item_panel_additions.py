@@ -19,7 +19,7 @@ def draw_copy_idname(layout, node):
     op2.string_to_copy = node.bl_idname
 
 def draw_node_path(layout, node):
-    layout.label(text=node.__module__.replace('flux.nodes.', '').replace('.', ' \\ '))
+    layout.label(icon='FILE_FOLDER', text=node.__module__.replace('flux.nodes.', '').replace('.', ' \\ '))
 
 def flux_node_info_draw(self, context):
     if not context_poll(context):

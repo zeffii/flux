@@ -28,7 +28,6 @@ sys.modules["flux"] = sys.modules[__name__]
 
 import flux
 if reload_event:
-    print('flux: detected reload event')
     from flux.core import perform_import_reload
     perform_import_reload()
 

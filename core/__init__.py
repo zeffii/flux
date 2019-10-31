@@ -25,7 +25,7 @@ flux_modules = [
 ]
 
 def perform_import_reload():
-    print("flux: starting reload with importlib")
+    print("flux: detected reload event, starting reload with importlib")
     import importlib
     from flux.core import flux_modules
     from flux.nodes import node_list

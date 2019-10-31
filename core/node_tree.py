@@ -5,8 +5,8 @@ from flux.core.update_system import evaluate_graph, make_dependency_graph
 
 class FluxCustomTree(NodeTree):
     '''A custom node tree type that will show up in the editor type list'''
-    bl_label = "Flux Node Tree"
-    bl_icon = 'NODETREE'
+    bl_label = "F l u x"
+    bl_icon = 'LIGHTPROBE_GRID'
 
     def evaluate_graph(self):
         #

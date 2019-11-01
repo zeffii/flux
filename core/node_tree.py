@@ -29,6 +29,23 @@ class FluxCustomTreeNode(Node):
     def poll(cls, ntree):
         return ntree.bl_idname == 'FluxCustomTree'
 
+    def copy(self, node):
+        print(f"Copying from node {node}")
+        if hasattr(self, 'fx_copy'):
+            print(f'calling fx copy on {node}')
+            self.fx_copy(node)
+
+    def free(self):
+        print(f"Removing node {node} Goodbye!")
+        if hasattr(self, 'fx_free'):
+            print(f'calling fx free on {node}')
+            self.fx_free(node)
+
+    def init(self):
+
+        self.fx_init()
+
+
 
 
 classes = [FluxCustomTree]

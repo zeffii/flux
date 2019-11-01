@@ -8,7 +8,7 @@ class FluxTestNode(FluxCustomTreeNode):
     my_string_prop: bpy.props.StringProperty()
     my_float_prop: bpy.props.FloatProperty(default=3.1415926)
 
-    def init(self, context):
+    def fx_init(self, context):
         self.inputs.new('FluxSocketGeneric', "Hello")
         self.inputs.new('NodeSocketFloat', "World")
         self.inputs.new('NodeSocketVector', "!")
@@ -17,11 +17,11 @@ class FluxTestNode(FluxCustomTreeNode):
         self.outputs.new('NodeSocketColor', "are")
         self.outputs.new('NodeSocketFloat', "you")
 
-    def copy(self, node):
-        print("Copying from node ", node)
+    def fx_copy(self, node):
+        print("---- opying from node ", node)
 
-    def free(self):
-        print("Removing node ", self, ", Goodbye!")
+    def fx_free(self):
+        print("---- Removing node ", self, ", Goodbye!")
 
     def draw_buttons(self, context, layout):
         layout.label(text="Node settings--")

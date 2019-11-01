@@ -1,7 +1,9 @@
+import collections
+
+_flux__cache_ = {}
 
 
-
-def evaluate_graph(graph):
+def evaluate_graph(ng, graph):
 
     """
     the goal of this function is to perform evaluation on all nodes in the given graph.
@@ -29,17 +31,33 @@ def evaluate_graph(graph):
             node.status = "unprocessed"
 
 
-def make_dependency_graph(tree):
+def make_dependency_graph(ng):
 
     """
-    in this simple implementation the whole tree is parsed and a list of nodes is generated that
-    represent an acceptable sequence in which to evaluate those nodes.
-
-    the exact algorithm is not super fancy while testing
-
+    lifted from sverchok, with major decapitations
     """
 
-    ...
+    deps = collections.defaultdict(set)
+
+    for i, link in enumerate(list(ng.links)):
+        #  this proctects against a rare occurance where
+        #  a link is considered valid without a to_socket
+        #  or a from_socket. proctects against a blender crash
+        #  see https://github.com/nortikin/sverchok/issues/493
+        if not (link.to_socket and link.from_socket):
+            ng.links.remove(link)
+            raise ValueError("Invalid link found!, please report this file")
+
+        if not link.is_valid:
+            return collections.defaultdict(set)  # this happens more often than one might think
+
+        if link.is_hidden:
+            continue
+
+        key, value = (link.to_node.name, link.from_node.name)
+        deps[key].add(value)
+
+    return deps
 
 
 def freeze_node_tree(ng):

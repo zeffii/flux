@@ -26,7 +26,7 @@ class FluxCustomTree(NodeTree):
         fx_update(self, None)
 
     def evaluate_graph(self, graph):
-        evaluate_graph(graph)
+        evaluate_graph(self, graph)
         self.has_changed = False
 
     def make_dependency_graph(self):

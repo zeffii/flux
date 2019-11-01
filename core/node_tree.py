@@ -4,9 +4,9 @@ from bpy.types import NodeTree, Node
 from flux.core.update_system import evaluate_graph, make_dependency_graph, freeze_node_tree
 
 
-def fx_update(tree, context):
-    graph = tree.make_dependency_graph()
-    tree.evaluate_graph(graph)
+def fx_update(node, context):
+    graph = node.id_data.make_dependency_graph()
+    node.id_data.evaluate_graph(graph)
 
 
 class FluxCustomTree(NodeTree):
@@ -51,7 +51,7 @@ class FluxCustomTreeNode(Node):
     def init(self, context):
 
         ng = self.id_data
-        with freeze_context(ng) as frozen:
+        with freeze_node_tree(ng) as frozen:
             if hasattr(self, 'fx_init'):
                 self.fx_init(context)
 

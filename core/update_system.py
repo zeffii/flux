@@ -40,3 +40,7 @@ def make_dependency_graph(tree):
     """
 
     ...
+
+
+def freeze_node_tree(ng):
+    ...

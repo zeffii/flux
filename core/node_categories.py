@@ -15,6 +15,9 @@ class FluxNodeCategory(NodeCategory):
 # all categories in a list
 node_categories = [
     # identifier, label, items list
+    FluxNodeCategory('Generators', "Some Nodes", items=[
+        NodeItem("FluxCircleNode"),
+    ]),
     FluxNodeCategory('SOMENODES', "Some Nodes", items=[
         NodeItem("FluxTestNode"),
     ]),

@@ -1,19 +1,28 @@
 import bpy
 from bpy.types import NodeTree, Node
 
-from flux.core.update_system import evaluate_graph, make_dependency_graph
+from flux.core.update_system import evaluate_graph, make_dependency_graph, freeze_node_tree
 
 class FluxCustomTree(NodeTree):
     '''A custom node tree type that will show up in the editor type list'''
     bl_label = "F l u x"
     bl_icon = 'LIGHTPROBE_GRID'
 
+    has_changed = bpy.props.BoolProperty(default=False)
+    is_frozen = bpy.props.BoolProperty(default=False)
+
+    def update(self):
+        if self.is_frozen:
+            return
+
+        self.has_changed = True
+
     def evaluate_graph(self):
         #
         #
         #
         #
-        ...
+        self.has_changed = False
 
     def make_dependency_graph(self):
         #
@@ -22,8 +31,7 @@ class FluxCustomTree(NodeTree):
         #
         ...
 
-# Mix-in class for all custom nodes in this tree type.
-# Defines a poll function to enable instantiation.
+
 class FluxCustomTreeNode(Node):
     @classmethod
     def poll(cls, ntree):
@@ -41,10 +49,12 @@ class FluxCustomTreeNode(Node):
             print(f'calling fx free on {node}')
             self.fx_free(node)
 
-    def init(self):
+    def init(self, context):
 
-        self.fx_init()
-
+        ng = self.id_data
+        with freeze_context(ng) as frozen:
+            if hasattr(self, 'fx_init'):
+                self.fx_init(context)
 
 
 

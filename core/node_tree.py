@@ -3,6 +3,12 @@ from bpy.types import NodeTree, Node
 
 from flux.core.update_system import evaluate_graph, make_dependency_graph, freeze_node_tree
 
+
+def fx_update(tree, context):
+    graph = tree.make_dependency_graph()
+    tree.evaluate_graph(graph)
+
+
 class FluxCustomTree(NodeTree):
     '''A custom node tree type that will show up in the editor type list'''
     bl_label = "F l u x"
@@ -17,19 +23,14 @@ class FluxCustomTree(NodeTree):
             return
 
         self.has_changed = True
-        graph = self.make_dependency_graph()
-        self.evaluate_graph(graph)
+        fx_update(self, None)
 
     def evaluate_graph(self, graph):
         evaluate_graph(graph)
         self.has_changed = False
 
     def make_dependency_graph(self):
-        #
-        #
-        #
-        #
-        ...
+        return make_dependency_graph(self)
 
 
 class FluxCustomTreeNode(Node):

@@ -13,15 +13,15 @@ class FluxCustomTree(NodeTree):
 
     def update(self):
         if self.is_frozen:
+            self.has_changed = False
             return
 
         self.has_changed = True
+        graph = self.make_dependency_graph()
+        self.evaluate_graph(graph)
 
-    def evaluate_graph(self):
-        #
-        #
-        #
-        #
+    def evaluate_graph(self, graph):
+        evaluate_graph(graph)
         self.has_changed = False
 
     def make_dependency_graph(self):
@@ -55,6 +55,11 @@ class FluxCustomTreeNode(Node):
         with freeze_context(ng) as frozen:
             if hasattr(self, 'fx_init'):
                 self.fx_init(context)
+
+        # because by default nothing is connected to a new node, there is no need
+        # to start building a depsgraph or evaluating it.
+
+        # nodes can trigger nodetree update if they want
 
 
 

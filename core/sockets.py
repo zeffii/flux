@@ -1,12 +1,7 @@
 import bpy
 from bpy.types import NodeSocket
 
-class FluxSocketGeneric(NodeSocket):
-    '''Custom node socket type'''
-    bl_label = "Custom Node Socket"
-
-    draw_socket: bpy.props.StringProperty()
-    prop_name: bpy.props.StringProperty()
+class FluxSocketCommon(NodeSocket):
 
     # Optional function for drawing the socket input value
     def draw(self, context, layout, node, text):
@@ -18,10 +13,25 @@ class FluxSocketGeneric(NodeSocket):
             else:
                 layout.label(text=text)
 
-    # Socket color
+
+class FluxSocketGeneric(FluxSocketCommon):
+    bl_label = "Custom Node Socket"
+
+    draw_socket: bpy.props.StringProperty()
+    prop_name: bpy.props.StringProperty()
+
     def draw_color(self, context, node):
         return (1.0, 0.4, 0.216, 0.5)
 
+class FluxSocketMesh(FluxSocketCommon):
+    bl_label = "Mesh Socket"
 
-classes = [FluxSocketGeneric]
+    draw_socket: bpy.props.StringProperty()
+    prop_name: bpy.props.StringProperty()
+
+    def draw_color(self, context, node):
+        return (1.0, 0.2, 0.516, 0.5)
+
+
+classes = [FluxSocketGeneric, FluxSocketMesh]
 register, unregister = bpy.utils.register_classes_factory(classes)        

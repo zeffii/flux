@@ -7,7 +7,7 @@ from flux.core.flux_cache import graph_cache
 def fx_update(node, context):
     tree = node.id_data
     graph = tree.get_dependency_graph()
-    node.id_data.evaluate_graph(graph, from_node=node)
+    tree.evaluate_graph(graph, from_node=node)
 
 
 class FluxCustomTree(NodeTree):
@@ -47,7 +47,7 @@ class FluxCustomTree(NodeTree):
             graph_cache[self] = self.make_dependency_graph()
         return graph_cache[self]
 
-class FluxCustomTreeNode:
+class FluxCustomTreeNode(Node):
     @classmethod
     def poll(cls, ntree):
         return ntree.bl_idname == 'FluxCustomTree'

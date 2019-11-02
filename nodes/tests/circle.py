@@ -2,13 +2,12 @@ import math
 import numpy as np
 
 import bpy
-from bpy.types import Node
 from sverchok.utils.geom import circle
 
 from flux.core.node_tree import FluxCustomTreeNode, fx_update
 
 
-class FluxCircleNode(Node, FluxCustomTreeNode):
+class FluxCircleNode(FluxCustomTreeNode):
     bl_idname = "FluxCircleNode"
     bl_label = "Circle"
     bl_icon = 'SOUND'

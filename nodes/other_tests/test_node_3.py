@@ -1,9 +1,8 @@
 import bpy
-from bpy.types import Node
 
 from flux.core.node_tree import FluxCustomTreeNode
 
-class FluxTestNode3(Node, FluxCustomTreeNode):
+class FluxTestNode3(FluxCustomTreeNode):
     bl_idname = "FluxTestNode3"
     bl_label = "Custom Node 3"
     bl_icon = 'SOUND'

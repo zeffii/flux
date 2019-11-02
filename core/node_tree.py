@@ -47,7 +47,7 @@ class FluxCustomTree(NodeTree):
             graph_cache[self] = self.make_dependency_graph()
         return graph_cache[self]
 
-class FluxCustomTreeNode(Node):
+class FluxCustomTreeNode:
     @classmethod
     def poll(cls, ntree):
         return ntree.bl_idname == 'FluxCustomTree'
@@ -65,19 +65,28 @@ class FluxCustomTreeNode(Node):
     def fx_init(self, context):
         print(self, "has no fx_init function")
 
+    def evaluate(self):
+        print(f"{self.name} has no evaluate function..")
+
     def init(self, context):
 
         # because by default nothing is connected to a new node, there is no need
         # to start building a depsgraph or evaluating it.
         # --- nodes can trigger nodetree update if they want
 
-        with freeze_node_tree(self) as frozen_self:
-            try:
-                frozen_self.fx_init(context)
-            except Exception as err:
-                print(f'fx_init of {frozen_self.name} failed:', err)
+        # with freeze_node_tree(self) as frozen_self:
+        #     try:
+        #         frozen_self.fx_init(context)
+        #     except Exception as err:
+        #         print(f'fx_init of {frozen_self.name} failed:', err)
+        self.id_data.freeze()
 
-
+        try:
+            self.fx_init(context)
+        except Exception as err:
+            print(f'fx_init of {self.name} failed:', err)
+        
+        self.id_data.unfreeze()
 
 
 classes = [FluxCustomTree]

@@ -2,9 +2,10 @@ import collections
 from contextlib import contextmanager
 
 @contextmanager
-def freeze_node_tree(ng):
+def freeze_node_tree(node):
+    ng = node.id_data
     ng.freeze()
-    yield ng
+    yield node
     ng.unfreeze()
 
 
@@ -58,7 +59,7 @@ def make_update_list_from_graph(ng, graph, from_node=None):
 
     final_list = list(out.keys())
     if from_node:
-        final_list = final_list[final_list.index(from_node):]
+        final_list = final_list[final_list.index(from_node.name):]
 
     return final_list 
 
@@ -77,7 +78,9 @@ def evaluate_graph(ng, graph, from_node=None):
 
     update_list = make_update_list_from_graph(ng, graph, from_node)
 
-    for node in graph:
+    for node_name in graph:
+
+        node = ng.nodes[node_name]
 
         if graph_processing_health == "healthy":
 

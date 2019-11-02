@@ -2,12 +2,13 @@ import math
 import numpy as np
 
 import bpy
+from bpy.types import Node
 from sverchok.utils.geom import circle
 
 from flux.core.node_tree import FluxCustomTreeNode, fx_update
 
 
-class FluxCircleNode(FluxCustomTreeNode):
+class FluxCircleNode(Node, FluxCustomTreeNode):
     bl_idname = "FluxCircleNode"
     bl_label = "Circle"
     bl_icon = 'SOUND'
@@ -16,16 +17,16 @@ class FluxCircleNode(FluxCustomTreeNode):
     points: bpy.props.IntProperty(name='num points', default=12, update=fx_update)
 
     def fx_init(self, context):
-        self.inputs.new('FluxSocketGeneric', "radius")
-        self.inputs.new('FluxSocketGeneric', "points")
+        self.inputs.new('FluxSocketGeneric', "radius").prop_name = 'radius'
+        self.inputs.new('FluxSocketGeneric', "points").prop_name = 'points'
 
         self.outputs.new('FluxSocketGeneric', "verts")
         self.outputs.new('FluxSocketGeneric', "edges")
         self.outputs.new('FluxSocketGeneric', "faces")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, 'radius')
-        layout.prop(self, 'points')
+    # def draw_buttons(self, context, layout):
+    #     layout.prop(self, 'radius')
+    #     layout.prop(self, 'points')
 
     def evaluate(self):
         #                           (radius=1.0, phase=0, nverts=20, matrix=None, mode='pydata')

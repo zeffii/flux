@@ -1,8 +1,14 @@
 import collections
+from contextlib import contextmanager
 
-data_cache_ = {}
+@contextmanager
+def freeze_node_tree(ng):
+    ng.freeze()
+    yield ng
+    ng.unfreeze()
 
-def make_update_list_from_graph(ng, graph, from_node=None)
+
+def make_update_list_from_graph(ng, graph, from_node=None):
 
     # make_update_list(node_tree, dependencies=None):
     node_set = set(ng.nodes.keys())

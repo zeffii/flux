@@ -18,6 +18,12 @@ class FluxCustomTree(NodeTree):
     has_changed = bpy.props.BoolProperty(default=False)
     is_frozen = bpy.props.BoolProperty(default=False)
 
+    def freeze(self):
+        self.is_frozen = True
+
+    def unfreeze(self):
+        self.is_frozen = False
+
     def update(self):
         if self.is_frozen:
             self.has_changed = False

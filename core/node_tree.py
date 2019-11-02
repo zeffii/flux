@@ -15,8 +15,8 @@ class FluxCustomTree(NodeTree):
     bl_label = "F l u x"
     bl_icon = 'LIGHTPROBE_GRID'
 
-    has_changed = bpy.props.BoolProperty(default=False)
-    is_frozen = bpy.props.BoolProperty(default=False)
+    has_changed: bpy.props.BoolProperty(default=False)
+    is_frozen: bpy.props.BoolProperty(default=False)
 
     def freeze(self):
         self.is_frozen = True
@@ -62,17 +62,21 @@ class FluxCustomTreeNode(Node):
             print(f'calling fx free on {node}')
             self.fx_free(node)
 
-    def init(self, context):
+    def fx_init(self, context):
+        print(self, "has no fx_init function")
 
-        ng = self.id_data
-        with freeze_node_tree(ng) as frozen:
-            if hasattr(self, 'fx_init'):
-                self.fx_init(context)
+    def init(self, context):
 
         # because by default nothing is connected to a new node, there is no need
         # to start building a depsgraph or evaluating it.
+        # --- nodes can trigger nodetree update if they want
 
-        # nodes can trigger nodetree update if they want
+        with freeze_node_tree(self) as frozen_self:
+            try:
+                frozen_self.fx_init(context)
+            except Exception as err:
+                print(f'fx_init of {frozen_self.name} failed:', err)
+
 
 
 

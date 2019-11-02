@@ -2,6 +2,7 @@ import bpy
 from flux.core.node_tree import FluxCustomTreeNode
 
 class FluxTestNode2(FluxCustomTreeNode):
+    bl_idname = "FluxTestNode2"
     bl_label = "Custom Node 2"
     bl_icon = 'SOUND'
 
@@ -10,7 +11,7 @@ class FluxTestNode2(FluxCustomTreeNode):
 
     def fx_init(self, context):
         self.inputs.new('FluxSocketGeneric', "Hello")
-        self.inputs.new('NodeSocketVector', "!")
+        self.inputs.new('NodeSocketVector', "yess")
 
         self.outputs.new('NodeSocketColor', "How")
         self.outputs.new('NodeSocketFloat', "you")

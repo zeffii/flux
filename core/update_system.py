@@ -1,9 +1,18 @@
 import collections
 
-_flux__cache_ = {}
+data_cache_ = {}
 
 
-def evaluate_graph(ng, graph):
+def make_update_list_from_graph(ng, graph, from_node):
+
+    if from_node:
+        # start composing update_list ignoring upstream of "from_node"
+        return []    
+
+    return []
+
+
+def evaluate_graph(ng, graph, from_node=None):
 
     """
     the goal of this function is to perform evaluation on all nodes in the given graph.
@@ -14,6 +23,8 @@ def evaluate_graph(ng, graph):
     """
 
     graph_processing_health = "healthy"
+
+    update_list = make_update_list_from_graph(ng, graph, from_node)
 
     for node in graph:
 

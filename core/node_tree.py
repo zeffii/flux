@@ -74,11 +74,6 @@ class FluxCustomTreeNode(Node):
         # to start building a depsgraph or evaluating it.
         # --- nodes can trigger nodetree update if they want
 
-        # with freeze_node_tree(self) as frozen_self:
-        #     try:
-        #         frozen_self.fx_init(context)
-        #     except Exception as err:
-        #         print(f'fx_init of {frozen_self.name} failed:', err)
         self.id_data.freeze()
 
         try:

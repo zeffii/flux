@@ -2,11 +2,12 @@ import bpy
 from bpy.types import NodeTree, Node
 
 from flux.core.update_system import evaluate_graph, make_dependency_graph, freeze_node_tree
-
+from flux.core.flux_cache import graph_cache
 
 def fx_update(node, context):
-    graph = node.id_data.make_dependency_graph()
-    node.id_data.evaluate_graph(graph)
+    tree = node.id_data
+    graph = tree.get_dependency_graph()
+    node.id_data.evaluate_graph(graph, from_node=node)
 
 
 class FluxCustomTree(NodeTree):
@@ -23,15 +24,22 @@ class FluxCustomTree(NodeTree):
             return
 
         self.has_changed = True
-        fx_update(self, None)
+        graph = self.make_dependency_graph()
+        self.evaluate_graph(graph)
 
-    def evaluate_graph(self, graph):
-        evaluate_graph(self, graph)
+    def evaluate_graph(self, graph, from_node=None):
+        evaluate_graph(self, graph, from_node)
         self.has_changed = False
 
     def make_dependency_graph(self):
-        return make_dependency_graph(self)
+        graph = make_dependency_graph(self)
+        graph_cache[self] = graph
+        return graph
 
+    def get_dependency_graph(self):
+        if not self in graph_cache:
+            graph_cache[self] = self.make_dependency_graph()
+        return graph_cache[self]
 
 class FluxCustomTreeNode(Node):
     @classmethod

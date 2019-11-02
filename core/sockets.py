@@ -15,23 +15,34 @@ class FluxSocketCommon(NodeSocket):
 
 
 class FluxSocketGeneric(FluxSocketCommon):
-    bl_label = "Custom Node Socket"
+    bl_label = "Generic Socket"
 
     draw_socket: bpy.props.StringProperty()
     prop_name: bpy.props.StringProperty()
 
     def draw_color(self, context, node):
-        return (1.0, 0.4, 0.216, 0.5)
+        return (0.9, 0.3, 0.7, 1.0)
 
-class FluxSocketMesh(FluxSocketCommon):
-    bl_label = "Mesh Socket"
+
+class FluxSocketVector(FluxSocketCommon):
+    bl_label = "Vector Socket"
 
     draw_socket: bpy.props.StringProperty()
     prop_name: bpy.props.StringProperty()
 
     def draw_color(self, context, node):
-        return (1.0, 0.2, 0.516, 0.5)
+        return (0.9, 0.5, 0.2, 1.0)
 
 
-classes = [FluxSocketGeneric, FluxSocketMesh]
+class FluxSocketNumber(FluxSocketCommon):
+    bl_label = "Number Socket"
+
+    draw_socket: bpy.props.StringProperty()
+    prop_name: bpy.props.StringProperty()
+
+    def draw_color(self, context, node):
+        return (0.5, 0.8, 0.9, 1.0)
+
+
+classes = [FluxSocketGeneric, FluxSocketVector, FluxSocketNumber]
 register, unregister = bpy.utils.register_classes_factory(classes)        

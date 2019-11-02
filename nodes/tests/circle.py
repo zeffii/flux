@@ -16,12 +16,12 @@ class FluxCircleNode(FluxCustomTreeNode):
     points: bpy.props.IntProperty(name='num points', default=12, update=fx_update)
 
     def fx_init(self, context):
-        self.inputs.new('FluxSocketGeneric', "radius").prop_name = 'radius'
-        self.inputs.new('FluxSocketGeneric', "points").prop_name = 'points'
+        self.inputs.new('FluxSocketNumber', "radius").prop_name = 'radius'
+        self.inputs.new('FluxSocketNumber', "points").prop_name = 'points'
 
-        self.outputs.new('FluxSocketGeneric', "verts")
-        self.outputs.new('FluxSocketGeneric', "edges")
-        self.outputs.new('FluxSocketGeneric', "faces")
+        self.outputs.new('FluxSocketVector', "verts")
+        self.outputs.new('FluxSocketNumber', "edges")
+        self.outputs.new('FluxSocketNumber', "faces")
 
     # def draw_buttons(self, context, layout):
     #     layout.prop(self, 'radius')

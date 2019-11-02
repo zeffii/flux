@@ -2,14 +2,59 @@ import collections
 
 data_cache_ = {}
 
+def make_update_list_from_graph(ng, graph, from_node=None)
 
-def make_update_list_from_graph(ng, graph, from_node):
+    # make_update_list(node_tree, dependencies=None):
+    node_set = set(ng.nodes.keys())
 
+    # node_tree is one node..
+    if len(node_set) == 1: return list(node_set)
+    
+    name = node_set.pop()
+    node_set.add(name)
+    node_count = len(node_set)
+
+    tree_stack = collections.deque([name])
+    tree_stack_append = tree_stack.append
+    tree_stack_pop = tree_stack.pop
+
+    out = collections.OrderedDict()
+
+    # travel in node graph create one sorted list of nodes based on dependencies
+    while node_count > len(out):
+
+        node_dependencies = True
+
+        for dep_name in graph[name]:
+            if dep_name in node_set and dep_name not in out:
+                tree_stack_append(name)
+                name = dep_name
+                node_dependencies = False
+                break
+
+        if len(tree_stack) > node_count:
+            error("Invalid node tree!")
+            return []
+
+        # if all dependencies are in out
+        if node_dependencies:
+            if name not in out:
+                out[name] = 1
+            if tree_stack:
+                name = tree_stack_pop()
+            else:
+                if node_count == len(out):
+                    break
+                for node_name in node_set:
+                    if node_name not in out:
+                        name = node_name
+                        break
+
+    final_list = list(out.keys())
     if from_node:
-        # start composing update_list ignoring upstream of "from_node"
-        return []    
+        final_list = final_list[final_list.index(from_node):]
 
-    return []
+    return final_list 
 
 
 def evaluate_graph(ng, graph, from_node=None):

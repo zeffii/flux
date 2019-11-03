@@ -34,40 +34,43 @@ class FluxSocketCommon:
     def socket_id(self):
         return str(hash(self.id_data.name + self.node.name + self.identifier))
 
-    @property
-    def other_has_upstream_node(self):
-        ...
 
-    def get_other_socket(socket):
+    def get_other_socket(self):
         """
         Get next real upstream socket.
         This should be expanded to support wifi nodes also.
         Will return None if there isn't a another socket connect
         so no need to check socket.links
         """
-        if not socket.is_linked:
+        if not self.is_linked:
             return None
-        if not socket.is_output:
-            other = socket.links[0].from_socket
+        if not self.is_output:
+            other = self.links[0].from_socket
         else:
-            other = socket.links[0].to_socket
+            other = self.links[0].to_socket
 
         if other.node.bl_idname == 'NodeReroute':
-            if not socket.is_output:
+            if not self.is_output:
                 return get_other_socket(other.node.inputs[0])
             else:
                 return get_other_socket(other.node.outputs[0])
-        else:  #other.node.bl_idname == 'WifiInputNode':
+        else:
             return other
 
 
     def data_get(self, fallback=None):
-        if self.is_linked and self.other_has_upstream_node:
-            return data_get(self)  # add other data here
+        if self.is_linked:
+            origin_socket = self.get_other_socket():
+            if origin_socket:
+                return data_get(origin_socket)
+            else:
+                print('socket unlinked...')
+
         return fallback or getattr(self.node, self.prop_name)
 
     def data_set(self, data):
         data_set(self, data)
+
 
 class FluxSocketGeneric(NodeSocket, FluxSocketCommon):
     bl_label = "Generic Socket"

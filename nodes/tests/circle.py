@@ -8,7 +8,6 @@ from flux.core.node_tree import FluxCustomTreeNode, fx_update
 
 
 class FluxCircleNode(FluxCustomTreeNode):
-    # bl_idname = "FluxCircleNode"
     bl_label = "Circle"
     bl_icon = 'SOUND'
 

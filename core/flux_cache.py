@@ -18,7 +18,7 @@ def data_get(socket):
     if tree_cache:
         return tree_cache.get(socket_key)
     
-    return [f'no tree data for {tree_key},{socket_key},({socket.name}']
+    return [f'no tree data for {tree_key},{socket_key},({socket.name})']
 
 def data_set(socket, data):
     tree_key = socket.node.id_data.name

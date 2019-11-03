@@ -2,6 +2,12 @@ import collections
 from contextlib import contextmanager
 
 
+def fx_update(node, context):
+    tree = node.id_data
+    graph = tree.get_dependency_graph()
+    tree.evaluate_graph(graph, from_node=node)
+
+
 def make_update_list_from_graph(ng, graph, from_node=None):
 
     # make_update_list(node_tree, dependencies=None):

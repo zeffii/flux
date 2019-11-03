@@ -28,3 +28,17 @@ def data_set(socket, data):
         data_cache[tree_key] = {}
 
     data_cache[tree_key][socket_key] = data
+
+def delete_node_from_cache(node):
+    tree_key = node.id_data.name
+
+    socket_data = data_cache.get(tree_key)
+    if not socket_data:
+        return
+
+    for (node_name, socket_index), value in socket_data.items():
+        if node_name == node.name:
+            socket_data[(node_name, socket_index)].pop()
+
+
+

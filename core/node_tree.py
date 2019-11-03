@@ -2,7 +2,7 @@ import bpy
 from bpy.types import NodeTree, Node
 
 from flux.core.update_system import evaluate_graph, make_dependency_graph
-from flux.core.flux_cache import graph_cache
+from flux.core.flux_cache import graph_cache, delete_node_from_cache
 
 def fx_update(node, context):
     tree = node.id_data
@@ -58,9 +58,11 @@ class FluxCustomTreeNode(Node):
             self.fx_copy(node)
 
     def free(self):
+        delete_node_from_cache(node)
         if hasattr(self, 'fx_free'):
             print(f'calling fx free on {node}')
             self.fx_free(node)
+
 
     def fx_init(self, context):
         print(self, "has no fx_init function")

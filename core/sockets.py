@@ -1,6 +1,8 @@
 import bpy
 from bpy.types import NodeSocket
 
+from flux.core.flux_cache import data_get, data_set
+
 class FluxSocketCommon:
 
     __annotations__ = {}
@@ -32,11 +34,18 @@ class FluxSocketCommon:
     def socket_id(self):
         return str(hash(self.id_data.name + self.node.name + self.identifier))
 
+    @property
+    def other_has_upstream_node(self):
+        ...
+
 
     def data_get(self, fallback=None):
-        # if self.is_linked and if self.other_is_socket:
-        #     return cache lookup
-        # return fallback or getattr(self.node, self.prop_name)
+        if self.is_linked and self.other_has_upstream_node:
+            return data_get(self)
+        return fallback or getattr(self.node, self.prop_name)
+
+    def data_set(self, data):
+        data_set(self, data)
 
 class FluxSocketGeneric(NodeSocket, FluxSocketCommon):
     bl_label = "Generic Socket"

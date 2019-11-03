@@ -15,7 +15,8 @@ def make_update_list_from_graph(ng, graph, from_node=None):
 
     # node_tree is one node..
     if len(node_set) == 1: return list(node_set)
-    
+    if len(node_set) == 0: return []
+
     name = node_set.pop()
     node_set.add(name)
     node_count = len(node_set)

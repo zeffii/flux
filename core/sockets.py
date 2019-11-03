@@ -60,7 +60,7 @@ class FluxSocketCommon:
 
     def data_get(self, fallback=None):
         if self.is_linked:
-            origin_socket = self.get_other_socket():
+            origin_socket = self.get_other_socket()
             if origin_socket:
                 return data_get(origin_socket)
             else:

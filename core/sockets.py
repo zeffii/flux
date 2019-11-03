@@ -59,11 +59,11 @@ class FluxSocketCommon:
                 return get_other_socket(other.node.outputs[0])
         else:  #other.node.bl_idname == 'WifiInputNode':
             return other
-            
+
 
     def data_get(self, fallback=None):
         if self.is_linked and self.other_has_upstream_node:
-            return data_get(self)
+            return data_get(self)  # add other data here
         return fallback or getattr(self.node, self.prop_name)
 
     def data_set(self, data):

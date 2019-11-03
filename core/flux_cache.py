@@ -1,12 +1,14 @@
 
 
-# did you expect anything more complicated?
-
 graph_cache = {}
 
 
+"""
+data is stored using human readable keys
 
-# data is stored using keys `(nodetree.name, node.name, socket.index)`
+    data_cache[nodetree.name][(node.name, socket.index)] = data`
+
+"""
 data_cache = {}
 
 

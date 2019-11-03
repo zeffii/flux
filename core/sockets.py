@@ -38,6 +38,28 @@ class FluxSocketCommon:
     def other_has_upstream_node(self):
         ...
 
+    def get_other_socket(socket):
+        """
+        Get next real upstream socket.
+        This should be expanded to support wifi nodes also.
+        Will return None if there isn't a another socket connect
+        so no need to check socket.links
+        """
+        if not socket.is_linked:
+            return None
+        if not socket.is_output:
+            other = socket.links[0].from_socket
+        else:
+            other = socket.links[0].to_socket
+
+        if other.node.bl_idname == 'NodeReroute':
+            if not socket.is_output:
+                return get_other_socket(other.node.inputs[0])
+            else:
+                return get_other_socket(other.node.outputs[0])
+        else:  #other.node.bl_idname == 'WifiInputNode':
+            return other
+            
 
     def data_get(self, fallback=None):
         if self.is_linked and self.other_has_upstream_node:

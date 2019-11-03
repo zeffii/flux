@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import NodeTree, Node
 
-from flux.core.update_system import evaluate_graph, make_dependency_graph, freeze_node_tree
+from flux.core.update_system import evaluate_graph, make_dependency_graph
 from flux.core.flux_cache import graph_cache
 
 def fx_update(node, context):

@@ -1,13 +1,6 @@
 import collections
 from contextlib import contextmanager
 
-@contextmanager
-def freeze_node_tree(node):
-    ng = node.id_data
-    ng.freeze()
-    yield node
-    ng.unfreeze()
-
 
 def make_update_list_from_graph(ng, graph, from_node=None):
 

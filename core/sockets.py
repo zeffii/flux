@@ -10,6 +10,12 @@ class FluxSocketCommon:
     __annotations__['prop_name'] = bpy.props.StringProperty()
 
     def draw(self, context, layout, node, text):
+
+        if self.draw_socket:
+            # this means the node is providing the socket draw function
+            getattr(node, self.draw_socket)(self, context, layout, node, text)
+            return
+
         if self.is_output or self.is_linked:
             layout.label(text=text)
         else:

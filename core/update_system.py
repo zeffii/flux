@@ -82,7 +82,12 @@ def evaluate_graph(ng, graph, from_node=None):
 
         node = ng.nodes[node_name]
 
+        if node.bl_idname == 'NodeReroute':
+            # this dot node has no evaluate function
+            continue
+
         if graph_processing_health == "healthy":
+
 
             try:
                 node.evaluate()

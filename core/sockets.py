@@ -3,6 +3,30 @@ from bpy.types import NodeSocket
 
 from flux.core.flux_cache import data_get, data_set
 
+
+def _get_other_socket(socket):
+    """
+    Get next real upstream socket.
+    This should be expanded to support wifi nodes also.
+    Will return None if there isn't a another socket connect
+    so no need to check socket.links
+    """
+    if not socket.is_linked:
+        return None
+    if not socket.is_output:
+        other = socket.links[0].from_socket
+    else:
+        other = socket.links[0].to_socket
+
+    if other.node.bl_idname == 'NodeReroute':
+        if not socket.is_output:
+            return _get_other_socket(other.node.inputs[0])
+        else:
+            return _get_other_socket(other.node.outputs[0])
+    else:
+        return other
+
+
 class FluxSocketCommon:
 
     __annotations__ = {}
@@ -42,26 +66,7 @@ class FluxSocketCommon:
 
 
     def get_other_socket(self):
-        """
-        Get next real upstream socket.
-        This should be expanded to support wifi nodes also.
-        Will return None if there isn't a another socket connect
-        so no need to check socket.links
-        """
-        if not self.is_linked:
-            return None
-        if not self.is_output:
-            other = self.links[0].from_socket
-        else:
-            other = self.links[0].to_socket
-
-        if other.node.bl_idname == 'NodeReroute':
-            if not self.is_output:
-                return get_other_socket(other.node.inputs[0])
-            else:
-                return get_other_socket(other.node.outputs[0])
-        else:
-            return other
+        return _get_other_socket(self)
 
 
     def data_get(self, fallback=None):

@@ -24,14 +24,12 @@ class FluxCircleNode(FluxCustomTreeNode):
         self.outputs.new('FluxSocketNumber', "edges")
         self.outputs.new('FluxSocketNumber', "faces")
 
-    # def draw_buttons(self, context, layout):
-    #     layout.prop(self, 'radius')
-    #     layout.prop(self, 'points')
-
     def evaluate(self):
         #                           (radius=1.0, phase=0, nverts=20, matrix=None, mode='pydata')
         verts, edges, faces = circle(radius=self.radius, nverts=self.points, mode='np')
-        print(verts)
+        self.outputs['verts'].data_set(verts)
+        self.outputs['edges'].data_set(edges)
+        self.outputs['faces'].data_set(faces)
 
 
 

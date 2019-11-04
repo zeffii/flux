@@ -17,9 +17,10 @@ node_categories = [
     # identifier, label, items list
     FluxNodeCategory('GENERATORS', "generators", items=[
         NodeItem("FluxCircleNode")]),
-    FluxNodeCategory('SOMENODES', "Some Nodes", items=[
-        NodeItem("FluxTestNode")]),
+    FluxNodeCategory('DEBUG', "Debug info", items=[
+        NodeItem("FluxDebugPrint")]),
     FluxNodeCategory('OTHERNODES', "Other Nodes", items=[
+        NodeItem("FluxTestNode"),
         NodeItem("FluxTestNode2", label="Node A", settings={
             "my_string_prop": repr("Lorem ipsum dolor sit amet"),
             "my_float_prop": repr(1.0),

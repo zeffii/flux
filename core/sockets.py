@@ -33,6 +33,24 @@ class FluxSocketCommon:
     __annotations__['draw_socket'] = bpy.props.StringProperty()
     __annotations__['prop_name'] = bpy.props.StringProperty()
 
+    """
+    using "draw_socket":
+
+    in your node:
+
+        @staticmethod
+        def draw_sink_socket(socket, context, layout, node, text):
+            row = layout.row()
+            ...
+
+
+        def fx_init(self, context):
+            self.inputs.new('FluxSocketGeneric', "sink").draw_socket = "draw_sink_socket"
+
+    the socket will now be drawn according to the content of that function
+
+    """
+
     def draw(self, context, layout, node, text):
 
         if self.draw_socket:

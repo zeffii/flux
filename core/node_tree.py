@@ -23,8 +23,11 @@ def throttle_tree_update(node):
 
     """
     node.id_data.skip_tree_update = True
-    yield node
-    node.id_data.skip_tree_update = False
+    try:
+        yield node
+    finally:
+        node.id_data.skip_tree_update = False
+
 
 
 class FluxCustomTree(NodeTree):

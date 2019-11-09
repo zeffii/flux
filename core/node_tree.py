@@ -87,8 +87,8 @@ class FluxCustomTreeNode(Node):
     def free(self):
         delete_node_from_cache(self)
         if hasattr(self, 'fx_free'):
-            print(f'calling fx free on {node}')
-            self.fx_free(node)
+            print(f'calling fx free on {self}')
+            self.fx_free()
 
 
     def fx_init(self, context):

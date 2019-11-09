@@ -1,8 +1,30 @@
+from contextlib import contextmanager
+
 import bpy
 from bpy.types import NodeTree, Node
 
 from flux.core.update_system import evaluate_graph, make_dependency_graph, fx_update
 from flux.core.flux_cache import graph_cache, delete_node_from_cache
+
+
+@contextmanager
+def throttle_tree_update(node):
+    """ usage
+    from sverchok.node_tree import throttle_tree_update
+
+    inside your node, f.ex inside a wrapped_update that creates a socket
+
+    def wrapped_update(self, context):
+        with throttle_tree_update(self):
+            self.inputs.new(...)
+            self.outputs.new(...)
+
+    that's it. 
+
+    """
+    node.id_data.skip_tree_update = True
+    yield node
+    node.id_data.skip_tree_update = False
 
 
 class FluxCustomTree(NodeTree):
@@ -12,6 +34,7 @@ class FluxCustomTree(NodeTree):
 
     has_changed: bpy.props.BoolProperty(default=False)
     is_frozen: bpy.props.BoolProperty(default=False)
+    skip_tree_update: bpy.props.BoolProperty(default=False)
 
     def freeze(self):
         self.is_frozen = True
@@ -20,9 +43,15 @@ class FluxCustomTree(NodeTree):
         self.is_frozen = False
 
     def update(self):
+        if self.skip_tree_update:
+            print('skipping update')
+            return
+
         if self.is_frozen:
             self.has_changed = False
             return
+
+        print('update - pass frozen/skip... time to do something')
 
         self.has_changed = True
         graph = self.make_dependency_graph()

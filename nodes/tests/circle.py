@@ -13,7 +13,7 @@ class FluxCircleNode(FluxCustomTreeNode):
 
     radius: bpy.props.FloatProperty(name='radius', description='huh', default=2.0, update=fx_update)
     points: bpy.props.IntProperty(name='num points', default=12, update=fx_update)
-    origin: bpy.props.FloatVectorProperty(name='origin', default=(0,0,0), size=3)
+    origin: bpy.props.FloatVectorProperty(name='origin', default=(0,0,0), size=3, update=fx_update)
 
     def fx_init(self, context):
         self.inputs.new('FluxSocketNumber', "radius").prop_name = 'radius'

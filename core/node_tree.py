@@ -22,8 +22,8 @@ def throttle_tree_update(node):
     that's it. 
 
     """
-    node.id_data.skip_tree_update = True
     try:
+        node.id_data.skip_tree_update = True
         yield node
     finally:
         node.id_data.skip_tree_update = False

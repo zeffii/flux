@@ -8,7 +8,7 @@ const INK = { bg: '#0b0d10', dot: '#1b2027', node: '#161a20', head: '#1d222a', e
 export class Editor {
   constructor(canvas, graph, hooks = {}) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.g = graph; this.hooks = hooks;
-    this.view = { x: 30, y: 20, k: 1 }; this.sel = new Set(); this.drag = null; this.info = new Map();
+    this.view = { x: 30, y: 20, k: 1 }; this.sel = new Set(); this.active = null; this.drag = null; this.info = new Map();
     this.undoStack = []; this.redoStack = []; this.dirty = true; this.input = null;
     this.snap = () => JSON.stringify(this.g.toJSON());
     this.undoStack.push(this.snap());
@@ -57,19 +57,19 @@ export class Editor {
     this.undoStack.push(s); if (this.undoStack.length > 200) this.undoStack.shift();
     this.redoStack = []; this.hooks.onChange?.();
   }
-  restore(s) { this.g.load(JSON.parse(s)); this.sel.clear(); this.dirty = true; this.hooks.onChange?.(); }
+  restore(s) { this.g.load(JSON.parse(s)); this.sel.clear(); if (!this.g.nodes.has(this.active)) this.active = null; this.dirty = true; this.hooks.onChange?.(); }
   undo() { if (this.undoStack.length < 2) return; this.redoStack.push(this.undoStack.pop()); this.restore(this.undoStack[this.undoStack.length - 1]); }
   redo() { if (!this.redoStack.length) return; const s = this.redoStack.pop(); this.undoStack.push(s); this.restore(s); }
-  reset(doc) { this.g.load(doc); this.sel.clear(); this.undoStack = [this.snap()]; this.redoStack = []; this.dirty = true; this.fit(); }
+  reset(doc) { this.g.load(doc); this.sel.clear(); this.active = null; this.undoStack = [this.snap()]; this.redoStack = []; this.dirty = true; this.fit(); }
 
   // ---- editing --------------------------------------------------------------------------------------------------
   addNode(type, gx, gy) {
     const n = this.g.add(type, Math.round(gx / 4) * 4, Math.round(gy / 4) * 4);
-    this.sel = new Set([n.id]); this.dirty = true; this.commit();
+    this.sel = new Set([n.id]); this.active = n.id; this.dirty = true; this.commit();
     return n;
   }
   placeAt() { const r = this.canvas.getBoundingClientRect(); return this.toGraph(r.width / 2 - W / 2, r.height / 2 - 40); }
-  deleteSelected() { for (const id of this.sel) this.g.remove(id); this.sel.clear(); this.dirty = true; this.commit(); }
+  deleteSelected() { for (const id of this.sel) this.g.remove(id); if (this.sel.has(this.active)) this.active = null; this.sel.clear(); this.dirty = true; this.commit(); }
   duplicateSelected() {
     const ids = [...this.sel], map = new Map(), copies = new Set();
     for (const id of ids) { const n = this.g.nodes.get(id), c = this.g.add(n.type, n.x + 28, n.y + 28, n.vals); map.set(id, c.id); copies.add(c.id); }
@@ -104,18 +104,19 @@ export class Editor {
       c.setPointerCapture(e.pointerId); c.focus();
       const [px, py] = pos(e), h = this.hit(px, py);
       this.hooks.onMenuClose?.();
-      if (!h) { if (!e.shiftKey) this.sel.clear(); this.drag = { mode: 'pan', px, py, vx: this.view.x, vy: this.view.y }; }
+      if (!h) this.drag = { mode: 'pan', px, py, vx: this.view.x, vy: this.view.y, shift: e.shiftKey, moved: false };   // a click without a drag deselects, on release
       else if (h.kind === 'out') this.drag = { mode: 'wire', from: { node: h.node.id, out: h.index }, x: px, y: py };
       else if (h.kind === 'in') {
         const l = this.g.linkTo(h.node.id, h.index);
         if (l) { this.g.disconnect(h.node.id, h.index); this.drag = { mode: 'wire', from: { node: l.a, out: l.ao }, x: px, y: py }; }   // pick the wire up
         else this.drag = { mode: 'wire', to: { node: h.node.id, in: h.index }, x: px, y: py };
       } else if (h.kind === 'slider') {
-        this.sel = new Set([h.node.id]);
+        this.sel = new Set([h.node.id]); this.active = h.node.id;
         this.drag = { mode: 'slider', node: h.node, index: h.index, px, v0: this.value(h.node, h.index), moved: false };
       } else {
         if (e.shiftKey) this.sel.has(h.node.id) ? this.sel.delete(h.node.id) : this.sel.add(h.node.id);
         else if (!this.sel.has(h.node.id)) this.sel = new Set([h.node.id]);
+        this.active = h.node.id;
         this.g.nodes.delete(h.node.id); this.g.nodes.set(h.node.id, h.node);   // to the front
         const p = this.toGraph(px, py);
         this.drag = { mode: 'move', gx: p.x, gy: p.y, starts: [...this.sel].map(id => { const n = this.g.nodes.get(id); return [n, n.x, n.y]; }) };
@@ -125,7 +126,7 @@ export class Editor {
     c.addEventListener('pointermove', e => {
       const [px, py] = pos(e), d = this.drag;
       if (!d) { const h = this.hit(px, py), cur = !h ? 'default' : h.kind === 'slider' ? 'ew-resize' : h.kind === 'head' || h.kind === 'body' ? 'grab' : 'crosshair'; if (c.style.cursor !== cur) c.style.cursor = cur; return; }
-      if (d.mode === 'pan') { this.view.x = d.vx + px - d.px; this.view.y = d.vy + py - d.py; }
+      if (d.mode === 'pan') { this.view.x = d.vx + px - d.px; this.view.y = d.vy + py - d.py; if (Math.hypot(px - d.px, py - d.py) > 3) d.moved = true; }
       else if (d.mode === 'wire') { d.x = px; d.y = py; }
       else if (d.mode === 'slider') {
         const inp = this.def(d.node).inputs[d.index], dx = px - d.px;
@@ -141,6 +142,7 @@ export class Editor {
       const d = this.drag; this.drag = null;
       if (!d) return;
       const [px, py] = pos(e);
+      if (d.mode === 'pan' && !d.moved && !d.shift) { this.sel.clear(); this.active = null; }
       if (d.mode === 'wire') {
         const h = this.hit(px, py);
         if (h && d.from && h.kind === 'in') this.g.connect(d.from.node, d.from.out, h.node.id, h.index);
@@ -202,7 +204,7 @@ export class Editor {
   }
 
   node(x, n) {
-    const d = this.def(n), { h } = this.size(n), sel = this.sel.has(n.id), accent = COLOURS[d.category];
+    const d = this.def(n), { h } = this.size(n), sel = this.sel.has(n.id), act = this.active === n.id, accent = COLOURS[d.category];
     const rr = (px, py, pw, ph, r) => { x.beginPath(); x.roundRect(px, py, pw, ph, r); };
     x.shadowColor = 'rgba(0,0,0,0.45)'; x.shadowBlur = 12; x.shadowOffsetY = 3;
     rr(n.x, n.y, W, h, 6); x.fillStyle = INK.node; x.fill();
@@ -211,7 +213,7 @@ export class Editor {
     x.fillStyle = INK.head; x.fillRect(n.x, n.y, W, HEAD);
     x.fillStyle = accent; x.fillRect(n.x, n.y, 3, h);
     x.restore();
-    rr(n.x, n.y, W, h, 6); x.lineWidth = sel ? 1.6 : 1; x.strokeStyle = sel ? INK.sel : INK.edge; x.stroke();
+    rr(n.x, n.y, W, h, 6); x.lineWidth = sel && act ? 2 : sel ? 1.4 : 1; x.strokeStyle = sel ? INK.sel : act ? '#6b7686' : INK.edge; x.stroke();
     x.font = '600 12px ui-sans-serif, system-ui, sans-serif'; x.textBaseline = 'middle'; x.fillStyle = INK.text; x.textAlign = 'left';
     x.fillText(d.label ?? d.type, n.x + 12, n.y + HEAD / 2 + 0.5);
     const st = d.status?.(n);

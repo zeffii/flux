@@ -92,12 +92,15 @@ export class CodePanel {
 
   // Called every frame: follow the selection, and show the node's status.
   update() {
-    const sel = this.editor.sel, one = sel.size === 1 ? this.g.nodes.get([...sel][0]) : null;
-    if (one?.id !== this.closedFor) this.closedFor = null;   // closing lasts until the selection moves on
-    const front = one?.type === 'script' && one.id !== this.closedFor ? one.id : null;
-    if (front !== null && front !== this.id) this.show(front);
-    const n = this.node(); if (!n) { this.hide(); return; }
-    this.setFront(front === this.id);
+    // Follow the selected script node, else the active one. Selected: in front. Only active: in the background.
+    const { sel, active } = this.editor, one = sel.size === 1 ? this.g.nodes.get([...sel][0]) : null, act = this.g.nodes.get(active);
+    let target = one?.type === 'script' ? one : act?.type === 'script' ? act : null;
+    if (target?.id !== this.closedFor) this.closedFor = null;   // closing lasts until a different node is followed
+    if (target && target.id === this.closedFor) target = null;
+    if (!target) { this.hide(); return; }
+    if (target.id !== this.id) this.show(target.id);
+    const n = target;
+    this.setFront(sel.has(n.id));
     if (document.activeElement !== this.ta && (n.vals[CODE] ?? DEFAULT_CODE) !== this.ta.value) { this.ta.value = n.vals[CODE] ?? DEFAULT_CODE; this.lines(); }   // undo, or a template
     const st = scriptStatus(n.id), d = this.editor.def(n), trusted = scriptsTrusted();
     const text = !trusted ? 'Scripts in this file are paused. Read them, then press Run scripts.'

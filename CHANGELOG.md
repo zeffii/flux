@@ -1,5 +1,11 @@
 # Changelog
 
+## 008 · 2026-10-24
+
+- The editor has an active node (the last one clicked, outlined brighter), like Blender.
+- Panning no longer clears the selection; a click on empty space without dragging deselects everything and clears the active node.
+- The script panel shows only for a script node that is selected (in front, editable) or active (faded in the background); otherwise it's gone.
+
 ## 007 · 2026-10-24
 
 - ↻ button: fetches fresh copies of every file the page uses, then reloads, so a new version shows up without a hard refresh. The graph is saved first.

@@ -33,8 +33,9 @@
   .slider-edit { position: absolute; z-index: 5; background: #0e1116; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; padding: 0 7px; font: 11px var(--mono); outline: none; }
 
   .code { position: absolute; top: 8px; right: 8px; bottom: 8px; width: min(46%, 560px); min-width: 300px; display: none; flex-direction: column; z-index: 0;
-    background: rgba(17, 21, 27, 0.55); border: 1px solid rgba(60, 72, 88, 0.45); border-radius: 8px; overflow: hidden; opacity: 0.8; transition: opacity 0.15s; }
-  .code:hover, .code:focus-within { opacity: 1; }
+    background: transparent; border: 1px solid rgba(60, 72, 88, 0.3); border-radius: 8px; overflow: hidden; opacity: 0.38; pointer-events: none; transition: opacity 0.15s; }
+  .code.front { z-index: 4; opacity: 1; pointer-events: auto; background: rgba(14, 17, 22, 0.94); border-color: #2f3846; box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
+  .code:not(.front) .code-head select, .code:not(.front) .code-head button { visibility: hidden; }
   .code.open { display: flex; }
   .code-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid rgba(60, 72, 88, 0.4); }
   .code-title { flex: 1; font-weight: 600; color: #e8d65a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

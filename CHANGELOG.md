@@ -1,5 +1,10 @@
 # Changelog
 
+## 006 · 2026-10-24
+
+- The script panel has two states. Selected script node: the panel comes to the front, solid and editable. Otherwise the last script stays on as a faded backdrop under the dot grid, and the graph gets every click.
+- Replaces 005's click routing; × still hides the panel completely.
+
 ## 005 · 2026-10-24
 
 - The script panel sits behind the node graph: nodes and wires draw over it, and the canvas is see-through, so the code reads like a layer underneath.

@@ -177,9 +177,9 @@ export class Editor {
     this.dirty = false;
     const x = this.ctx, v = this.view;
     x.setTransform(d, 0, 0, d, 0, 0);
-    x.clearRect(0, 0, w, h);   // the pane paints the background, so whatever sits under the canvas (the code panel) shows through
+    x.clearRect(0, 0, w, h);   // the pane paints the background, so the code panel can show through under the dots
     const step = 24 * v.k;
-    if (step > 9) { x.fillStyle = INK.dot; for (let gx = ((v.x % step) + step) % step; gx < w; gx += step) for (let gy = ((v.y % step) + step) % step; gy < h; gy += step) { const o = this.hole; if (o && gx > o.x && gx < o.x + o.w && gy > o.y && gy < o.y + o.h) continue; x.fillRect(gx - 1, gy - 1, 2, 2); } }
+    if (step > 9) { x.fillStyle = INK.dot; for (let gx = ((v.x % step) + step) % step; gx < w; gx += step) for (let gy = ((v.y % step) + step) % step; gy < h; gy += step) x.fillRect(gx - 1, gy - 1, 2, 2); }
     x.save(); x.translate(v.x, v.y); x.scale(v.k, v.k);
     x.lineWidth = 2;
     for (const l of this.g.links) {

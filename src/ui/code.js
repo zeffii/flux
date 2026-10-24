@@ -35,22 +35,6 @@ export class CodePanel {
     });
     el.querySelector('.code-close').onclick = () => { this.closedFor = this.id; this.hide(); };
     this.runBtn.onclick = () => { trustScripts(true); this.g.touch(); hooks.onTrust?.(); };
-
-    // The panel sits under the node canvas. Over a node the canvas takes the pointer; elsewhere over the panel it
-    // lets it through to the code, and a drag that started in the code stays with the code.
-    const canvas = editor.canvas;
-    let codeDrag = false;
-    const route = e => {
-      if (!this.isOpen() || editor.drag) { canvas.style.pointerEvents = ''; return; }
-      if (codeDrag) { canvas.style.pointerEvents = 'none'; return; }
-      const r = el.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) { canvas.style.pointerEvents = ''; return; }
-      const c = canvas.getBoundingClientRect();
-      canvas.style.pointerEvents = editor.hit(e.clientX - c.left, e.clientY - c.top) ? '' : 'none';
-    };
-    addEventListener('pointermove', route, true);
-    el.addEventListener('pointerdown', () => { codeDrag = true; });
-    addEventListener('pointerup', e => { codeDrag = false; route(e); }, true);
   }
 
   isOpen() { return this.el.classList.contains('open'); }
@@ -89,29 +73,31 @@ export class CodePanel {
     this.band.style.height = `${lh}px`;
   }
 
-  hide() { if (this.isOpen()) { this.apply(); this.editor.commit(); this.el.classList.remove('open'); } this.id = null; this.editor.canvas.style.pointerEvents = ''; this.setHole(); }
-
-  // Tell the editor where the panel is, so the dot grid leaves it clean.
-  setHole() {
-    let hole = null;
-    if (this.isOpen()) { const r = this.el.getBoundingClientRect(), c = this.editor.canvas.getBoundingClientRect(); hole = { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height }; }
-    const key = JSON.stringify(hole);
-    if (key !== this.holeKey) { this.holeKey = key; this.editor.hole = hole; this.editor.dirty = true; }
+  // Open on a node's code (in the background until that node is selected).
+  show(id) {
+    this.hide();
+    const n = this.g.nodes.get(id);
+    this.id = id; this.el.classList.add('open');
+    this.ta.value = n.vals[CODE] ?? DEFAULT_CODE; this.ta.scrollTop = 0; this.errLine = 0; this.shown = ''; this.lines();
   }
+
+  // Front: above the graph and editable. Back: faded under the dot grid, and the graph gets every click.
+  setFront(on) {
+    if (on === !!this.front) return;
+    if (!on) { this.apply(); this.editor.commit(); if (document.activeElement === this.ta) this.ta.blur(); }
+    this.front = on; this.el.classList.toggle('front', on);
+  }
+
+  hide() { if (this.isOpen()) { this.apply(); this.editor.commit(); this.el.classList.remove('open'); } this.id = null; this.setFront(false); }
 
   // Called every frame: follow the selection, and show the node's status.
   update() {
     const sel = this.editor.sel, one = sel.size === 1 ? this.g.nodes.get([...sel][0]) : null;
     if (one?.id !== this.closedFor) this.closedFor = null;   // closing lasts until the selection moves on
-    const target = one?.type === 'script' && one.id !== this.closedFor ? one.id : null;
-    if (target !== this.id) {
-      this.hide();
-      if (target === null) return;
-      this.id = target; this.el.classList.add('open');
-      this.ta.value = one.vals[CODE] ?? DEFAULT_CODE; this.ta.scrollTop = 0; this.errLine = 0; this.lines();
-    }
+    const front = one?.type === 'script' && one.id !== this.closedFor ? one.id : null;
+    if (front !== null && front !== this.id) this.show(front);
     const n = this.node(); if (!n) { this.hide(); return; }
-    this.setHole();
+    this.setFront(front === this.id);
     if (document.activeElement !== this.ta && (n.vals[CODE] ?? DEFAULT_CODE) !== this.ta.value) { this.ta.value = n.vals[CODE] ?? DEFAULT_CODE; this.lines(); }   // undo, or a template
     const st = scriptStatus(n.id), d = this.editor.def(n), trusted = scriptsTrusted();
     const text = !trusted ? 'Scripts in this file are paused. Read them, then press Run scripts.'

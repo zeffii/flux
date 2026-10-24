@@ -1,6 +1,7 @@
 // The code panel: opens beside the node editor when one script node is selected, and runs the code as you type.
 import { CODE, DEFAULT_CODE, scriptStatus, scriptsTrusted, trustScripts } from '../nodes/script.js';
 import { TEMPLATES } from '../nodes/script-templates.js';
+import { highlight } from './highlight.js';
 
 export class CodePanel {
   constructor(host, graph, editor, hooks = {}) {
@@ -9,14 +10,15 @@ export class CodePanel {
     el.className = 'code';
     el.innerHTML = `
       <div class="code-head"><span class="code-title"></span><select title="start from a template"><option value="">templates…</option>${TEMPLATES.map((t, i) => `<option value="${i}">${t.name}</option>`).join('')}</select><button class="code-run" title="run the scripts in this file">Run scripts</button><button class="code-close" title="close (Esc)">×</button></div>
-      <div class="code-body"><pre class="code-gutter"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off"></textarea></div>
+      <div class="code-body"><pre class="code-gutter"></pre><div class="code-wrap"><div class="code-band"></div><pre class="code-hl" aria-hidden="true"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off"></textarea></div></div>
       <div class="code-foot"></div>`;
     host.appendChild(el);
     this.ta = el.querySelector('textarea'); this.gutter = el.querySelector('.code-gutter'); this.foot = el.querySelector('.code-foot');
     this.title = el.querySelector('.code-title'); this.runBtn = el.querySelector('.code-run');
+    this.hl = el.querySelector('.code-hl'); this.band = el.querySelector('.code-band');
     const ta = this.ta;
     ta.addEventListener('input', () => { this.lines(); clearTimeout(this.timer); this.timer = setTimeout(() => this.apply(), 180); });
-    ta.addEventListener('scroll', () => { this.gutter.scrollTop = ta.scrollTop; });
+    ta.addEventListener('scroll', () => this.sync());
     ta.addEventListener('blur', () => { this.apply(); editor.commit(); });
     ta.addEventListener('keydown', e => {
       e.stopPropagation();
@@ -53,10 +55,20 @@ export class CodePanel {
     this.g.setCode(n.id, this.ta.value); this.editor.dirty = true;
   }
 
+  // Redraw the gutter and the coloured copy of the text under the textarea.
   lines(errLine = this.errLine) {
     const count = this.ta.value.split('\n').length;
     this.gutter.innerHTML = Array.from({ length: count }, (_, i) => (i + 1 === errLine ? `<b>${i + 1}</b>` : `${i + 1}`)).join('\n') + '\n';
-    this.gutter.scrollTop = this.ta.scrollTop;
+    this.hl.innerHTML = highlight(this.ta.value);
+    this.band.style.display = errLine ? '' : 'none';
+    this.sync();
+  }
+
+  sync() {
+    const ta = this.ta, cs = getComputedStyle(ta), lh = parseFloat(cs.lineHeight), pad = parseFloat(cs.paddingTop);
+    this.gutter.scrollTop = ta.scrollTop; this.hl.scrollTop = ta.scrollTop; this.hl.scrollLeft = ta.scrollLeft;
+    if (this.errLine) this.band.style.transform = `translateY(${pad + (this.errLine - 1) * lh - ta.scrollTop}px)`;
+    this.band.style.height = `${lh}px`;
   }
 
   hide() { if (this.el.classList.contains('open')) { this.apply(); this.editor.commit(); this.el.classList.remove('open'); } this.id = null; }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 004 · 2026-10-24
+
+- Script panel is syntax highlighted: keywords, numbers, strings, comments, helpers, method calls.
+- The header is coloured part by part: `in` / `>in` / `out`, socket names in their wire colour (orange numbers, blue geometry; outputs bold, underlined where declared), `int`, ranges, defaults and kinds; a bad header word gets a wavy underline.
+- Socket names keep their colour wherever the body uses them, so inputs and outputs stand out from local variables.
+- The error line gets a red band across the code as well as in the gutter.
+
 ## 003 · 2026-10-24
 
 - Script node: plain JS whose comment header declares its sockets, in the spirit of SNLite. `in name 12 int 1..64` gives a slider with a default, int rounding and a hard range; `in name list`, `in name geo`, `>in name geo` (required: waits until linked); `out name geo|list`.

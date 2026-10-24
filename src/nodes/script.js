@@ -45,6 +45,7 @@ const HELPERS = {
 };
 const PER_RUN = ['time', 'state', 'print'];
 const RESERVED = new Set([...Object.keys(HELPERS), ...PER_RUN]);
+export const HELPER_NAMES = RESERVED;
 
 // A geometry output: add points by position, or refer to ones already added by index.
 export class GeoOut extends MeshBuilder {

@@ -1,0 +1,11 @@
+{
+  "name": "flux",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Flux: a node-based 3D visuals editor in the Sverchok style, made to move with music.",
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "start": "node serve.mjs"
+  }
+}

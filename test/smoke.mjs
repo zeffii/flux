@@ -4,6 +4,9 @@ import { NODES } from '../src/nodes/index.js';
 import { demoGraph } from '../src/core/demo.js';
 import { broadcast, join, transform, vcount } from '../src/core/geo.js';
 import { noise1 } from '../src/nodes/sources.js';
+import { CODE, scriptStatus, parseHeader, trustScripts } from '../src/nodes/script.js';
+import { TEMPLATES } from '../src/nodes/script-templates.js';
+import { defOf } from '../src/nodes/index.js';
 
 const run = (g, time = 0) => g.evaluate({ time });
 const first = (res, id, o = 0) => res.results.get(id).out[o];
@@ -87,7 +90,7 @@ const first = (res, id, o = 0) => res.results.get(id).out[o];
 }
 
 { // every node type evaluates with its defaults and stays finite
-  for (const type of Object.keys(NODES)) {
+  for (const type of Object.keys(NODES).filter(t => t !== 'script')) {
     const g = new Graph(); g.add(type);
     const r = run(g); const res = [...r.results.values()][0];
     for (const o of res.out) assert.ok(Array.isArray(o) ? o.every(Number.isFinite) : Array.from(o.v).every(Number.isFinite), `${type} finite`);
@@ -140,4 +143,57 @@ const one = (type, vals = {}) => { const g = new Graph(), n = g.add(type, 0, 0, 
   g.connect(box.id, 0, arr.id, 0); g.connect(ring.id, 0, arr.id, 1); g.connect(arr.id, 0, tr.id, 0); g.connect(tr.id, 0, j.id, 0); g.connect(box.id, 0, j.id, 1);
   const r = run(g); assert.equal(first(r, arr.id).f.length, 12 * 3 * 5); assert.equal(first(r, j.id).f.length, 12 * 3 * 6); assert.ok(closed(first(r, j.id)));
   console.log('ok: faces carry through');
+}
+
+{ // script: header makes sockets, outputs are hoisted, ranges clamp, errors keep the last good output
+  const h = parseHeader('// my thing\n// in a 3 int 1..5\n// in b .5\n// in l list\n// >in g geo\n// out o geo\n// out n list');
+  assert.equal(h.label, 'my thing'); assert.deepEqual(h.inputs.map(i => i.name), ['a', 'b', 'l', 'g']);
+  assert.ok(h.inputs[0].int && h.inputs[0].hard && h.inputs[0].min === 1 && h.inputs[0].max === 5); assert.ok(h.inputs[3].required);
+  assert.deepEqual(h.outputs.map(o => o.kind), ['geo', 'num']);
+  assert.match(parseHeader('// in sin 1').errors[0], /taken/); assert.match(parseHeader('// in a 1\n// out a geo').errors[0], /twice/);
+
+  const g = new Graph(), s = g.add('script'), code = `// t
+// in  count 4 int 1..6
+// out pts geo
+// out xs  list
+const min = 2
+for (const i of range(count)) { pts.point([i, 0, 0]); xs.push(i * min) }
+if (count > 5) return
+pts.loop([[0, 1, 0], [1, 1, 0], [1, 2, 0]])`;
+  g.setCode(s.id, code);
+  assert.deepEqual(defOf(s).inputs.map(i => i.name), ['count']);
+  let r = run(g); assert.equal(vcount(first(r, s.id, 0)), 7); assert.deepEqual(first(r, s.id, 1), [0, 2, 4, 6]);
+  s.vals.count = 99; g.touch(); r = run(g);
+  assert.equal(vcount(first(r, s.id, 0)), 6, 'hard max clamps to 6, and an early return still flushes');
+
+  g.setCode(s.id, code.replace('xs.push', 'nope(); xs.push')); r = run(g);
+  assert.match(scriptStatus(s.id).error, /nope/); assert.equal(scriptStatus(s.id).line, 6, 'error line counts from the top of the script');
+  assert.equal(first(r, s.id, 1).length, 1, 'fresh code with an error has no last output yet');
+
+  g.setCode(s.id, code); run(g); g.nodes.get(s.id).vals[CODE] = code.replace('const min = 2', 'const min = 2; undefinedThing()'); g.touch();
+  r = run(g); assert.ok(scriptStatus(s.id).error); assert.equal(vcount(first(r, s.id, 0)), 0, 'changed code resets the last output');
+  console.log('ok: script basics');
+}
+
+{ // script: geo inputs, required inputs wait, state persists, sockets change and stale links go
+  const g = new Graph(), grid = g.add('grid', 0, 0, { 'x count': 2, 'y count': 2 }), s = g.add('script'), v = g.add('view');
+  g.setCode(s.id, `// >in shape geo\n// out o geo\n// out n list\nstate.k = (state.k ?? 0) + 1\nfor (const p of shape) o.point(p)\nn.push(state.k, shape.count)`);
+  let r = run(g); assert.equal(scriptStatus(s.id).waiting, true); assert.equal(first(r, s.id, 1).length, 1);
+  assert.ok(g.connect(grid.id, 0, s.id, 0)); assert.ok(g.connect(s.id, 0, v.id, 0));
+  r = run(g, 0); assert.deepEqual(first(r, s.id, 1), [1, 4]); r = run(g, 1); assert.deepEqual(first(r, s.id, 1), [2, 4], 'state carries over, and state makes it re-run each frame');
+  g.setCode(s.id, `// in shape list\n// out o list`);
+  assert.equal(g.links.length, 0, 'geo link into a list input and geo link out of a list output are dropped');
+  console.log('ok: script inputs and state');
+}
+
+{ // script: every template runs clean, and untrusted scripts wait
+  for (const t of TEMPLATES) {
+    const g = new Graph(), s = g.add('script'), grid = g.add('grid'); g.setCode(s.id, t.code);
+    if (defOf(s).inputs[0]?.kind === 'geo') g.connect(grid.id, 0, s.id, 0);
+    const r = run(g, 1.5); assert.equal(scriptStatus(s.id).error, null, `${t.name}: ${scriptStatus(s.id).error}`);
+    assert.ok(r.results.get(s.id).out.some(o => (o.v ? o.v.length : o.length) > 0), `${t.name} makes something`);
+  }
+  const g = new Graph(), s = g.add('script'); trustScripts(false); run(g); assert.match(scriptStatus(s.id).error, /paused/); trustScripts(true);
+  const h = Graph.from(JSON.parse(JSON.stringify(g))); assert.equal(defOf([...h.nodes.values()][0]).outputs.length, defOf(s).outputs.length, 'code saves with the graph');
+  console.log('ok: script templates');
 }

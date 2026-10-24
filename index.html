@@ -32,6 +32,21 @@
 
   .slider-edit { position: absolute; z-index: 5; background: #0e1116; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; padding: 0 7px; font: 11px var(--mono); outline: none; }
 
+  .code { position: absolute; top: 8px; right: 8px; bottom: 8px; width: min(46%, 560px); min-width: 300px; display: none; flex-direction: column; z-index: 4;
+    background: rgba(14, 17, 22, 0.97); border: 1px solid #2f3846; border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,0.5); overflow: hidden; }
+  .code.open { display: flex; }
+  .code-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .code-title { flex: 1; font-weight: 600; color: #e8d65a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .code-head select, .code-head button { background: #12161b; color: var(--text); border: 1px solid var(--line); border-radius: 5px; height: 24px; font: 12px var(--sans); cursor: pointer; }
+  .code-head .code-run { border-color: #e8d65a; color: #e8d65a; padding: 0 8px; }
+  .code-head .code-close { width: 24px; font-size: 15px; line-height: 1; }
+  .code-body { flex: 1; display: flex; min-height: 0; font: 12.5px/1.55 var(--mono); }
+  .code-gutter { margin: 0; padding: 10px 8px 10px 10px; color: #4a5462; text-align: right; overflow: hidden; user-select: none; min-width: 38px; font: inherit; }
+  .code-gutter b { color: #fff; background: #a3283d; border-radius: 3px; padding: 0 3px; font-weight: 400; }
+  .code textarea { flex: 1; margin: 0; padding: 10px 12px 10px 4px; border: 0; outline: none; resize: none; background: transparent; color: #dfe6ee; font: inherit; tab-size: 2; white-space: pre; overflow: auto; caret-color: #e8d65a; }
+  .code-foot { padding: 6px 10px; border-top: 1px solid var(--line); font: 11.5px/1.4 var(--mono); color: var(--dim); white-space: pre-wrap; max-height: 5.5em; overflow: auto; }
+  .code-foot.bad { color: #ff8a9a; }
+
   #menu { position: fixed; z-index: 10; width: 240px; max-height: 70vh; display: none; flex-direction: column; background: #151a20; border: 1px solid #2f3846; border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,0.55); overflow: hidden; }
   #menu.open { display: flex; }
   #menu input { margin: 8px; padding: 6px 8px; background: #0e1116; border: 1px solid var(--line); border-radius: 5px; color: var(--text); font: inherit; outline: none; }

@@ -4,10 +4,12 @@ import { demoGraph } from './core/demo.js';
 import { NODES, CATEGORIES, COLOURS } from './nodes/index.js';
 import { Editor } from './ui/editor.js';
 import { Viewer } from './ui/viewer.js';
+import { CodePanel } from './ui/code.js';
+import { trustScripts, scriptsTrusted } from './nodes/script.js';
 import { vcount, fcount } from './core/geo.js';
 
 const $ = id => document.getElementById(id);
-const KEY = 'flux.graph', SPLIT = 'flux.split';
+const KEY = 'flux.graph', SPLIT = 'flux.split', TRUST = 'flux.trusted';
 
 // ---- the graph: last session's, else the demo --------------------------------------------------------------------
 const graph = new Graph();
@@ -15,13 +17,15 @@ try { const saved = localStorage.getItem(KEY); saved ? graph.load(JSON.parse(sav
 catch { graph.load(demoGraph().toJSON()); }
 if (!graph.nodes.size) graph.load(demoGraph().toJSON());
 
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(graph.toJSON())); } catch {} };
+try { trustScripts(localStorage.getItem(TRUST) !== 'no'); } catch {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(graph.toJSON())); localStorage.setItem(TRUST, scriptsTrusted() ? 'yes' : 'no'); } catch {} };
 let saveTimer = 0;
 const saveSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(save, 300); };
 
 const menu = makeMenu();
 const editor = new Editor($('editor'), graph, { onChange: saveSoon, onMenu: menu.open, onMenuClose: menu.close });
 const viewer = new Viewer($('viewer'));
+const code = new CodePanel($('editor').parentElement, graph, editor, { onSave: () => download(), onTrust: () => { save(); toast('scripts running'); } });
 requestAnimationFrame(() => editor.fit());
 
 // ---- transport ---------------------------------------------------------------------------------------------------
@@ -44,14 +48,19 @@ $('open').onclick = () => $('file').click();
 $('file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
-  try { const doc = JSON.parse(await f.text()); if (!Array.isArray(doc.nodes)) throw 0; editor.reset(doc); save(); toast(`opened ${f.name}`); }
+  try {
+    const doc = JSON.parse(await f.text()); if (!Array.isArray(doc.nodes)) throw 0;
+    const scripts = doc.nodes.filter(n => n.type === 'script').length;
+    trustScripts(!scripts); editor.reset(doc); save();
+    toast(scripts ? `opened ${f.name}: ${scripts} script${scripts > 1 ? 's' : ''} paused until you press Run scripts` : `opened ${f.name}`);
+  }
   catch { toast('not a flux file'); }
 };
-$('new').onclick = () => { editor.reset(demoGraph().toJSON()); save(); time = 0; toast('fresh demo graph'); };
+$('new').onclick = () => { trustScripts(true); editor.reset(demoGraph().toJSON()); save(); time = 0; toast('fresh demo graph'); };
 
 // ---- keys that work anywhere --------------------------------------------------------------------------------------
 addEventListener('keydown', e => {
-  const typing = e.target instanceof HTMLInputElement;
+  const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
   if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); download(); }
   else if (e.key === ' ' && !typing) { e.preventDefault(); setPlaying(!playing); }
   else if (e.key === 'Escape') menu.close();
@@ -80,6 +89,7 @@ function frame(now) {
   // The editor only needs redrawing when numbers it shows have changed: time-driven nodes change every frame.
   editor.info = results;
   if (playing && [...results.values()].some(r => r.dyn)) editor.dirty = true;
+  code.update();
   editor.draw();
   viewer.draw(views);
   $('time').textContent = `${time.toFixed(2)} s`;
@@ -142,4 +152,4 @@ function makeMenu() {
 }
 
 let toastTimer = 0;
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1600); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1600 + msg.length * 30); }

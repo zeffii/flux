@@ -1,6 +1,7 @@
 // The graph: nodes with a type, a position and the values of their unlinked inputs, plus links between ports.
 // Every input of a node is also its parameter: link it, or leave it and drag its value.
-import { NODES } from '../nodes/index.js';
+import { NODES, defOf } from '../nodes/index.js';
+import { CODE } from '../nodes/script.js';
 import { EMPTY } from './geo.js';
 
 export class Graph {
@@ -27,12 +28,25 @@ export class Graph {
   connect(a, ao, b, bi) {
     const na = this.nodes.get(a), nb = this.nodes.get(b);
     if (!na || !nb || a === b) return false;
-    const out = NODES[na.type].outputs[ao], inp = NODES[nb.type].inputs[bi];
+    const out = defOf(na).outputs[ao], inp = defOf(nb).inputs[bi];
     if (!out || !inp || out.kind !== inp.kind) return false;
     if (this.reaches(b, a)) return false;
     this.links = this.links.filter(l => !(l.b === b && l.bi === bi));
     this.links.push({ a, ao, b, bi }); this.touch();
     return true;
+  }
+
+  // Give a script node new code. Its sockets may change, so links that no longer fit are dropped.
+  setCode(id, code) {
+    const node = this.nodes.get(id); if (!node) return;
+    node.vals[CODE] = code;
+    const d = defOf(node);
+    this.links = this.links.filter(l => {
+      if (l.b === id) { const a = this.nodes.get(l.a), o = a && defOf(a).outputs[l.ao], i = d.inputs[l.bi]; return !!(o && i && o.kind === i.kind); }
+      if (l.a === id) { const b = this.nodes.get(l.b), i = b && defOf(b).inputs[l.bi], o = d.outputs[l.ao]; return !!(o && i && o.kind === i.kind); }
+      return true;
+    });
+    this.touch();
   }
 
   disconnect(b, bi) { this.links = this.links.filter(l => !(l.b === b && l.bi === bi)); this.touch(); }
@@ -70,7 +84,7 @@ export class Graph {
     const memo = new Map(), busy = new Set();
     const visit = id => {
       if (memo.has(id)) return memo.get(id);
-      const node = this.nodes.get(id), def = NODES[node.type];
+      const node = this.nodes.get(id), def = defOf(node);
       if (busy.has(id)) return { out: def.outputs.map(o => zero(o.kind)), ins: [], dyn: false };
       busy.add(id);
       let dyn = !!def.dynamic;

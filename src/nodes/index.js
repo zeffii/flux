@@ -6,9 +6,10 @@ import { modifiers } from './modifiers.js';
 import { math } from './math.js';
 import { solids } from './solids.js';
 import { surfaces } from './surfaces.js';
+import { script } from './script.js';
 
 export const NODES = {};
-for (const [category, group] of Object.entries({ Sources: sources, Generators: generators, Solids: solids, Surfaces: surfaces, Modifiers: modifiers, Math: math })) {
+for (const [category, group] of Object.entries({ Sources: sources, Generators: generators, Solids: solids, Surfaces: surfaces, Modifiers: modifiers, Math: math, Script: script })) {
   for (const [type, def] of Object.entries(group)) NODES[type] = { type, category, ...def };
 }
 
@@ -25,5 +26,8 @@ NODES.view = {
   outputs: [],
 };
 
-export const CATEGORIES = ['Sources', 'Generators', 'Solids', 'Surfaces', 'Modifiers', 'Math', 'Output'];
-export const COLOURS = { Sources: '#e0a84a', Generators: '#4fc3d9', Solids: '#6f9bf5', Surfaces: '#e58fc8', Modifiers: '#b58cf0', Math: '#6fd18a', Output: '#f06b7e' };
+export const CATEGORIES = ['Sources', 'Generators', 'Solids', 'Surfaces', 'Modifiers', 'Math', 'Script', 'Output'];
+export const COLOURS = { Sources: '#e0a84a', Generators: '#4fc3d9', Solids: '#6f9bf5', Surfaces: '#e58fc8', Modifiers: '#b58cf0', Math: '#6fd18a', Script: '#e8d65a', Output: '#f06b7e' };
+
+// A node's definition. Most come straight from the registry; a script node builds its own from its code.
+export const defOf = node => { const d = NODES[node.type]; return d.ports ? d.ports(node) : d; };

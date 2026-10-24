@@ -1,5 +1,5 @@
 // The node editor: a 2D canvas where nodes are dragged about, ports are wired, and any unlinked number is a slider.
-import { NODES, COLOURS } from '../nodes/index.js';
+import { COLOURS, defOf } from '../nodes/index.js';
 
 const W = 172, HEAD = 26, ROW = 22, PAD = 8, PORT = 5.5;
 const KIND = { num: '#e0a84a', geo: '#4fc3d9' };
@@ -16,7 +16,7 @@ export class Editor {
   }
 
   // ---- geometry -------------------------------------------------------------------------------------------------
-  def(n) { return NODES[n.type]; }
+  def(n) { return defOf(n); }
   size(n) { const d = this.def(n); return { w: W, h: HEAD + (d.outputs.length + d.inputs.length) * ROW + PAD }; }
   outPos(n, i) { return { x: n.x + W, y: n.y + HEAD + i * ROW + ROW / 2 }; }
   inPos(n, i) { return { x: n.x, y: n.y + HEAD + (this.def(n).outputs.length + i) * ROW + ROW / 2 }; }
@@ -214,6 +214,8 @@ export class Editor {
     rr(n.x, n.y, W, h, 6); x.lineWidth = sel ? 1.6 : 1; x.strokeStyle = sel ? INK.sel : INK.edge; x.stroke();
     x.font = '600 12px ui-sans-serif, system-ui, sans-serif'; x.textBaseline = 'middle'; x.fillStyle = INK.text; x.textAlign = 'left';
     x.fillText(d.label ?? d.type, n.x + 12, n.y + HEAD / 2 + 0.5);
+    const st = d.status?.(n);
+    if (st?.error || st?.waiting) { x.beginPath(); x.arc(n.x + W - 14, n.y + HEAD / 2, 4, 0, Math.PI * 2); x.fillStyle = st.error ? '#f0566b' : INK.dim; x.fill(); }
     const res = this.info.get(n.id);
     d.outputs.forEach((o, i) => {
       const q = this.outPos(n, i), linked = this.g.links.some(l => l.a === n.id && l.ao === i);

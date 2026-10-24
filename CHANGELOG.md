@@ -1,5 +1,14 @@
 # Changelog
 
+## 003 · 2026-10-24
+
+- Script node: plain JS whose comment header declares its sockets, in the spirit of SNLite. `in name 12 int 1..64` gives a slider with a default, int rounding and a hard range; `in name list`, `in name geo`, `>in name geo` (required: waits until linked); `out name geo|list`.
+- Outputs are hoisted: each `out` exists before the body runs (geo outputs take `.point`, `.edge`, `.line`, `.loop`, `.face`, `.add`; list outputs are arrays) and is flushed by name afterwards, early `return` included. Assigning replaces it, e.g. `shape = mesh(verts, edges, faces)` with Sverchok-style lists.
+- Helpers in scope: maths, `TAU`, `range`, `zip`, `lerp`, `clamp`, `fract`, `rand`, `noise`, `mesh`, `time`, `print`, and `state`, which survives between runs until the code changes.
+- Code panel opens beside the editor when a script node is selected: runs as you type, marks the error line, shows print output; errors keep the last good output and put a red dot on the node.
+- Templates: petal ring (after SNLite's petal_sine_numpy), petals, spiral, drift (state), pydata, per vertex.
+- Scripts inside an opened .flux file wait until you press Run scripts.
+
 ## 002 · 2026-10-24
 
 - Geometry now carries faces as well as edges: n-gons shade as triangles but keep their outline as wireframe.

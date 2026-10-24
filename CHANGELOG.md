@@ -1,5 +1,11 @@
 # Changelog
 
+## 005 · 2026-10-24
+
+- The script panel sits behind the node graph: nodes and wires draw over it, and the canvas is see-through, so the code reads like a layer underneath.
+- Over a node the graph takes the mouse; anywhere else over the panel, clicks, typing, scrolling and text selection go to the code.
+- The panel dims a little until you hover or type in it, and the dot grid leaves its area clean.
+
 ## 004 · 2026-10-24
 
 - Script panel is syntax highlighted: keywords, numbers, strings, comments, helpers, method calls.

@@ -1,8 +1,7 @@
 // The node editor: a 2D canvas where nodes are dragged about, ports are wired, and any unlinked number is a slider.
-import { NODES } from '../nodes/index.js';
+import { NODES, COLOURS } from '../nodes/index.js';
 
 const W = 172, HEAD = 26, ROW = 22, PAD = 8, PORT = 5.5;
-const COLOURS = { Sources: '#e0a84a', Generators: '#4fc3d9', Modifiers: '#b58cf0', Math: '#6fd18a', Output: '#f06b7e' };
 const KIND = { num: '#e0a84a', geo: '#4fc3d9' };
 const INK = { bg: '#0b0d10', dot: '#1b2027', node: '#161a20', head: '#1d222a', edge: '#2b323d', text: '#d5dbe4', dim: '#7c8794', bar: '#232a34', sel: '#e8edf5' };
 

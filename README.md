@@ -4,7 +4,9 @@ A node-based 3D visuals editor in the browser, in the Sverchok style, made to mo
 
 **Live:** https://zeffii.github.io/flux/
 
-Wires carry either lists of numbers (orange) or geometry (blue: vertices + edges). Short lists repeat to match long ones, so one value or one per vertex both work. Every input is also a parameter: leave it unlinked and drag its slider.
+Wires carry either lists of numbers (orange) or geometry (blue: vertices, edges and faces). Short lists repeat to match long ones, so one value or one per vertex both work. Every input is also a parameter: leave it unlinked and drag its slider.
+
+Nodes: sources (number, time, range, noise), generators (grid, circle, arc, line), solids (box, cylinder, pyramid, torus, uv sphere, icosphere, platonic), surfaces (surface, metaballs, skin), modifiers (transform, array, join, lift), math (math, vector) and view. Each view node chooses its colour and whether faces show flat, smooth or as a glow.
 
 ## Keys
 

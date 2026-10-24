@@ -29,7 +29,7 @@ export const modifiers = {
           const x = shape.v[j] * f, y = shape.v[j + 1] * f;
           v[j] = x * c - y * s + at.v[i * 3]; v[j + 1] = x * s + y * c + at.v[i * 3 + 1]; v[j + 2] = shape.v[j + 2] * f + at.v[i * 3 + 2];
         }
-        copies.push({ v, e: shape.e });
+        copies.push({ v, e: shape.e, f: shape.f });
       }
       return [join(copies)];
     },
@@ -48,7 +48,7 @@ export const modifiers = {
     eval([g, h, amount]) {
       const n = vcount(g), v = Float32Array.from(g.v);
       for (let i = 0; i < n; i++) v[i * 3 + 2] += h[Math.min(i, h.length - 1)] * amount[0];
-      return [geo(v, g.e)];
+      return [geo(v, g.e, g.f)];
     },
   },
 };

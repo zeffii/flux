@@ -95,7 +95,7 @@ export class Graph {
     const views = [];
     for (const node of this.nodes.values()) {
       const r = visit(node.id);
-      if (node.type === 'view') views.push({ id: node.id, geo: r.ins[0], hue: r.ins[1][0], size: r.ins[2][0], lines: r.ins[3][0] >= 0.5 });
+      if (node.type === 'view') views.push({ id: node.id, geo: r.ins[0], hue: r.ins[1][0], size: r.ins[2][0], lines: r.ins[3][0] >= 0.5, faces: Math.round(r.ins[4][0]) });
     }
     return { views, results: memo };
   }

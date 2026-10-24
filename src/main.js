@@ -1,14 +1,13 @@
 // Wiring the page together: the loop evaluates the graph each frame, the editor shows the results, the viewer draws them.
 import { Graph } from './core/graph.js';
 import { demoGraph } from './core/demo.js';
-import { NODES, CATEGORIES } from './nodes/index.js';
+import { NODES, CATEGORIES, COLOURS } from './nodes/index.js';
 import { Editor } from './ui/editor.js';
 import { Viewer } from './ui/viewer.js';
-import { vcount } from './core/geo.js';
+import { vcount, fcount } from './core/geo.js';
 
 const $ = id => document.getElementById(id);
 const KEY = 'flux.graph', SPLIT = 'flux.split';
-const COLOURS = { Sources: '#e0a84a', Generators: '#4fc3d9', Modifiers: '#b58cf0', Math: '#6fd18a', Output: '#f06b7e' };
 
 // ---- the graph: last session's, else the demo --------------------------------------------------------------------
 const graph = new Graph();
@@ -84,7 +83,8 @@ function frame(now) {
   editor.draw();
   viewer.draw(views);
   $('time').textContent = `${time.toFixed(2)} s`;
-  const verts = views.reduce((s, v) => s + (v.geo ? vcount(v.geo) : 0), 0), text = `${graph.nodes.size} nodes · ${verts.toLocaleString()} verts`;
+  const verts = views.reduce((s, v) => s + (v.geo ? vcount(v.geo) : 0), 0), tris = views.reduce((s, v) => s + (v.geo && v.faces ? fcount(v.geo) : 0), 0);
+  const text = `${graph.nodes.size} nodes · ${verts.toLocaleString()} verts${tris ? ` · ${tris.toLocaleString()} tris` : ''}`;
   if (text !== shown) { $('stats').textContent = shown = text; }
   requestAnimationFrame(frame);
 }

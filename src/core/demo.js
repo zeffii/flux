@@ -9,8 +9,8 @@ export function demoGraph() {
   const turn = g.add('math', 260, 20, { b: 18, op: 2 });
   const arr = g.add('array', 480, 200, { scale: 1, rot: 0, twist: 0 });
   const wave = g.add('math', 260, 170, { b: 0.35, op: 2 });
-  const view = g.add('view', 720, 200, { hue: 190, points: 3 });
-  const guide = g.add('view', 720, 380, { hue: 40, points: 0 });
+  const view = g.add('view', 720, 200, { hue: 190, points: 3, faces: 0 });
+  const guide = g.add('view', 720, 380, { hue: 40, points: 0, faces: 0 });
   g.connect(time.id, 0, turn.id, 0);
   g.connect(turn.id, 0, arr.id, 4);
   g.connect(time.id, 3, wave.id, 0);

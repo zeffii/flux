@@ -16,14 +16,15 @@ export const generators = {
     inputs: [num('x count', 5, 1, 64, { int: true }), num('y count', 5, 1, 64, { int: true }), num('x size', 2, 0, 20), num('y size', 2, 0, 20)],
     outputs: out,
     eval([cx, cy, sx, sy]) {
-      const nx = clampInt(cx, 1, 256), ny = clampInt(cy, 1, 256), v = new Float32Array(nx * ny * 3), e = [];
+      const nx = clampInt(cx, 1, 256), ny = clampInt(cy, 1, 256), v = new Float32Array(nx * ny * 3), e = [], f = [];
       for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
         const k = (j * nx + i) * 3;
         v[k] = nx > 1 ? (i / (nx - 1) - 0.5) * sx[0] : 0; v[k + 1] = ny > 1 ? (j / (ny - 1) - 0.5) * sy[0] : 0;
         if (i + 1 < nx) e.push(j * nx + i, j * nx + i + 1);
         if (j + 1 < ny) e.push(j * nx + i, (j + 1) * nx + i);
+        if (i + 1 < nx && j + 1 < ny) { const a = j * nx + i, b = a + 1, c = a + nx + 1, d = a + nx; f.push(a, b, c, a, c, d); }
       }
-      return [geo(v, e)];
+      return [geo(v, e, f)];
     },
   },
   circle: {

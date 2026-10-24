@@ -1,8 +1,11 @@
-// Geometry is the one thing a geo wire carries: packed xyz vertices and edge index pairs.
+// Geometry is the one thing a geo wire carries: packed xyz vertices, edge index pairs and face triangles.
+// Edges are what you see as wireframe; faces are triangles for shading, so a quad shows as a quad, not two triangles.
 // Z is up, as in Blender. Numbers on num wires are plain arrays (lists), broadcast like Sverchok does.
-export const EMPTY = Object.freeze({ v: new Float32Array(0), e: new Uint32Array(0) });
-export const geo = (v, e) => ({ v: v instanceof Float32Array ? v : Float32Array.from(v), e: e instanceof Uint32Array ? e : Uint32Array.from(e ?? []) });
+export const EMPTY = Object.freeze({ v: new Float32Array(0), e: new Uint32Array(0), f: new Uint32Array(0) });
+const u32 = a => (a instanceof Uint32Array ? a : Uint32Array.from(a ?? []));
+export const geo = (v, e, f) => ({ v: v instanceof Float32Array ? v : Float32Array.from(v), e: u32(e), f: u32(f) });
 export const vcount = g => g.v.length / 3;
+export const fcount = g => (g.f ? g.f.length / 3 : 0);
 
 // Repeat the shorter lists to the length of the longest, so [1,2,3] + [10] works. An empty list counts as [0].
 export function broadcast(...lists) {
@@ -12,17 +15,18 @@ export function broadcast(...lists) {
 }
 
 export function join(list) {
-  let nv = 0, ne = 0;
-  for (const g of list) { nv += g.v.length; ne += g.e.length; }
-  const v = new Float32Array(nv), e = new Uint32Array(ne);
-  let ov = 0, oe = 0;
+  let nv = 0, ne = 0, nf = 0;
+  for (const g of list) { nv += g.v.length; ne += g.e.length; nf += g.f?.length ?? 0; }
+  const v = new Float32Array(nv), e = new Uint32Array(ne), f = new Uint32Array(nf);
+  let ov = 0, oe = 0, of = 0;
   for (const g of list) {
     v.set(g.v, ov);
     const base = ov / 3;
     for (let i = 0; i < g.e.length; i++) e[oe + i] = g.e[i] + base;
-    ov += g.v.length; oe += g.e.length;
+    if (g.f) for (let i = 0; i < g.f.length; i++) f[of + i] = g.f[i] + base;
+    ov += g.v.length; oe += g.e.length; of += g.f?.length ?? 0;
   }
-  return { v, e };
+  return { v, e, f };
 }
 
 const RAD = Math.PI / 180;
@@ -37,7 +41,7 @@ export function transform(g, { move = [0, 0, 0], rot = [0, 0, 0], scale = [1, 1,
     t = x * cz - y * sz; y = x * sz + y * cz; x = t;
     v[i] = x + move[0]; v[i + 1] = y + move[1]; v[i + 2] = z + move[2];
   }
-  return { v, e: g.e };
+  return { v, e: g.e, f: g.f ?? EMPTY.f };
 }
 
 // A chain (or closed loop) of edges through n vertices.

@@ -94,3 +94,50 @@ const first = (res, id, o = 0) => res.results.get(id).out[o];
   }
   console.log('ok: every node');
 }
+
+// Every edge of a closed triangle mesh is shared by exactly two triangles.
+const closed = g => { const c = new Map(); for (let t = 0; t < g.f.length; t += 3) for (let k = 0; k < 3; k++) { const a = g.f[t + k], b = g.f[t + (k + 1) % 3], key = a < b ? `${a},${b}` : `${b},${a}`; c.set(key, (c.get(key) ?? 0) + 1); } return c.size > 0 && [...c.values()].every(n => n === 2); };
+const one = (type, vals = {}) => { const g = new Graph(), n = g.add(type, 0, 0, vals); return first(run(g), n.id); };
+
+{ // solids: counts, closed, Euler V - E + F = 2 on the outline polygons
+  const euler = (g, faces) => vcount(g) - g.e.length / 2 + faces;
+  const want = [[0, 4, 6, 4], [1, 8, 12, 6], [2, 6, 12, 8], [3, 20, 30, 12], [4, 12, 30, 20]];
+  for (const [kind, v, e, f] of want) {
+    const g = one('platonic', { kind });
+    assert.equal(vcount(g), v, `platonic ${kind} verts`); assert.equal(g.e.length / 2, e, `platonic ${kind} edges`);
+    assert.equal(euler(g, f), 2); assert.ok(closed(g), `platonic ${kind} closed`);
+    for (let i = 0; i < g.v.length; i += 3) assert.ok(Math.abs(Math.hypot(g.v[i], g.v[i + 1], g.v[i + 2]) - 1) < 1e-5);
+  }
+  const ico = one('icosphere', { subdiv: 1 }); assert.equal(vcount(ico), 42); assert.equal(ico.f.length / 3, 80); assert.ok(closed(ico));
+  const box = one('box'); assert.equal(vcount(box), 8); assert.equal(box.e.length / 2, 12); assert.ok(closed(box));
+  const cyl = one('cylinder', { sides: 8, rings: 2 }); assert.equal(vcount(cyl), 24); assert.equal(euler(cyl, 8 * 2 + 2), 2); assert.ok(closed(cyl));
+  const pyr = one('pyramid'); assert.equal(vcount(pyr), 5); assert.equal(pyr.e.length / 2, 8); assert.ok(closed(pyr));
+  const tor = one('torus', { segments: 10, sides: 6 }); assert.equal(vcount(tor), 60); assert.equal(euler(tor, 60), 0); assert.ok(closed(tor));
+  const sph = one('sphere', { segments: 8, rings: 4 }); assert.equal(vcount(sph), 8 * 3 + 2); assert.equal(euler(sph, 8 * 4), 2); assert.ok(closed(sph));
+  console.log('ok: solids');
+}
+
+{ // surfaces: every kind is finite; klein and blob close in v / u
+  for (let kind = 0; kind < 6; kind++) { const s = one('surface', { kind, 'u count': 12, 'v count': 10 }); assert.equal(vcount(s), 120); assert.ok(Array.from(s.v).every(Number.isFinite)); assert.ok(s.f.length > 0); }
+  console.log('ok: surface');
+}
+
+{ // metaballs and skin give closed meshes about the right size
+  const g = new Graph(), line = g.add('line', 0, 0, { count: 2, length: 4 }), mb = g.add('metaballs', 0, 0, { radius: 1, resolution: 24 }), sk = g.add('skin', 0, 0, { radius: 0.5, smooth: 0, resolution: 32 });
+  const pt = g.add('vector'), ball = g.add('metaballs', 0, 0, { radius: 1.5, resolution: 32 });
+  g.connect(line.id, 0, mb.id, 0); g.connect(line.id, 0, sk.id, 0); g.connect(pt.id, 0, ball.id, 0);
+  const r = run(g), m = first(r, mb.id), s = first(r, sk.id), b = first(r, ball.id);
+  assert.ok(vcount(m) > 50 && closed(m), 'metaballs closed');
+  assert.ok(vcount(s) > 50 && closed(s), 'skin closed');
+  let lo = Infinity, hi = -Infinity; for (let i = 0; i < s.v.length; i += 3) { lo = Math.min(lo, s.v[i]); hi = Math.max(hi, s.v[i]); }
+  assert.ok(Math.abs(lo + 2.5) < 0.2 && Math.abs(hi - 2.5) < 0.2, `skin spans the capsule (${lo}, ${hi})`);
+  for (let i = 0; i < b.v.length; i += 3) assert.ok(Math.abs(Math.hypot(b.v[i], b.v[i + 1], b.v[i + 2]) - 1.5) < 0.12, 'a lone ball has its radius');
+  console.log('ok: metaballs and skin');
+}
+
+{ // faces survive array, transform, lift and join
+  const g = new Graph(), box = g.add('box'), ring = g.add('circle', 0, 0, { count: 5 }), arr = g.add('array'), tr = g.add('transform', 0, 0, { z: 1 }), j = g.add('join');
+  g.connect(box.id, 0, arr.id, 0); g.connect(ring.id, 0, arr.id, 1); g.connect(arr.id, 0, tr.id, 0); g.connect(tr.id, 0, j.id, 0); g.connect(box.id, 0, j.id, 1);
+  const r = run(g); assert.equal(first(r, arr.id).f.length, 12 * 3 * 5); assert.equal(first(r, j.id).f.length, 12 * 3 * 6); assert.ok(closed(first(r, j.id)));
+  console.log('ok: faces carry through');
+}

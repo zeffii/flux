@@ -56,6 +56,13 @@ $('file').onchange = async e => {
   }
   catch { toast('not a flux file'); }
 };
+// Refresh without a hard reload: re-fetch every file this page loaded, bypassing the cache, then reload.
+$('update').onclick = async () => {
+  save(); toast('fetching the latest version…');
+  const urls = new Set([location.href.split('#')[0], ...performance.getEntriesByType('resource').map(r => r.name).filter(u => u.startsWith(location.origin))]);
+  await Promise.all([...urls].map(u => fetch(u, { cache: 'reload' }).catch(() => {})));
+  location.reload();
+};
 $('new').onclick = () => { trustScripts(true); editor.reset(demoGraph().toJSON()); save(); time = 0; toast('fresh demo graph'); };
 
 // ---- keys that work anywhere --------------------------------------------------------------------------------------

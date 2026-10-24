@@ -1,5 +1,10 @@
 # Changelog
 
+## 007 · 2026-10-24
+
+- ↻ button: fetches fresh copies of every file the page uses, then reloads, so a new version shows up without a hard refresh. The graph is saved first.
+- GitHub button links to the source.
+
 ## 006 · 2026-10-24
 
 - The script panel has two states. Selected script node: the panel comes to the front, solid and editable. Otherwise the last script stays on as a faded backdrop under the dot grid, and the graph gets every click.

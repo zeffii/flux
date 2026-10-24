@@ -16,7 +16,8 @@
   header { display: flex; align-items: center; gap: 6px; padding: 0 10px; background: var(--panel); border-bottom: 1px solid var(--line); user-select: none; }
   header .brand { font-weight: 700; letter-spacing: 0.14em; font-size: 12px; margin-right: 10px; color: var(--accent); }
   header button { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 5px; height: 26px; padding: 0 10px; font: inherit; cursor: pointer; }
-  header button:hover { border-color: #3a4452; background: #171c23; }
+  header button:hover, header .btn:hover { border-color: #3a4452; background: #171c23; }
+  header .btn { display: inline-flex; align-items: center; color: var(--text); text-decoration: none; border: 1px solid var(--line); border-radius: 5px; height: 26px; padding: 0 10px; }
   header button.on { border-color: var(--accent); color: var(--accent); }
   header .time { font-family: var(--mono); color: var(--dim); min-width: 74px; text-align: right; }
   header .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
@@ -97,6 +98,9 @@
     <button id="new" title="Start from the demo graph">New</button>
     <button id="open" title="Open a .flux file">Open</button>
     <button id="save" title="Save a .flux file (Ctrl+S)">Save</button>
+    <span class="sep"></span>
+    <button id="update" title="Fetch the latest version of Flux and reload (your graph is kept)">↻</button>
+    <a class="btn hide-sm" href="https://github.com/zeffii/flux" target="_blank" rel="noopener" title="Source on GitHub">GitHub</a>
     <input type="file" id="file" accept=".flux,.json,application/json" hidden>
   </header>
   <main>

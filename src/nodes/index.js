@@ -7,9 +7,10 @@ import { math } from './math.js';
 import { solids } from './solids.js';
 import { surfaces } from './surfaces.js';
 import { script } from './script.js';
+import { edit } from './edit.js';
 
 export const NODES = {};
-for (const [category, group] of Object.entries({ Sources: sources, Generators: generators, Solids: solids, Surfaces: surfaces, Modifiers: modifiers, Math: math, Script: script })) {
+for (const [category, group] of Object.entries({ Sources: sources, Generators: generators, Solids: solids, Surfaces: surfaces, Modifiers: { ...modifiers, ...edit }, Math: math, Script: script })) {
   for (const [type, def] of Object.entries(group)) NODES[type] = { type, category, ...def };
 }
 

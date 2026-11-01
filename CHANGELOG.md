@@ -1,5 +1,13 @@
 # Changelog
 
+## 009 · 2026-11-01
+
+- Edit node (Modifiers): hand edits layered on top of the geometry flowing in. Moved vertices are stored as offsets, so they still follow the parametric shape; pinned vertices hold an absolute position and are cut loose. `amount` blends from upstream (0) to fully edited (1), and can be wired like any input.
+- Edits are keyed by vertex index; if upstream changes its vertex count the node shows an amber dot and a warning, and applies what still fits.
+- Editing in the 3D view while an edit node is selected or active: click to pick vertices (Shift adds/removes), B box select (Ctrl on release removes), A all/none, G R S move/rotate/scale with X Y Z constraints and typed values, click or Enter to keep, Esc or right-click to cancel, P pin/unpin, Alt+G forget edits, Ctrl+Z undo. A HUD shows what's going on.
+- Vertex markers: white plain, blue offset, pink pinned, orange selected.
+- `window.flux` exposes the graph, editor and viewer in the browser console.
+
 ## 008 · 2026-10-24
 
 - The editor has an active node (the last one clicked, outlined brighter), like Blender.

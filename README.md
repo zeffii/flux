@@ -6,7 +6,7 @@ A node-based 3D visuals editor in the browser, in the Sverchok style, made to mo
 
 Wires carry either lists of numbers (orange) or geometry (blue: vertices, edges and faces). Short lists repeat to match long ones, so one value or one per vertex both work. Every input is also a parameter: leave it unlinked and drag its slider.
 
-Nodes: sources (number, time, range, noise), generators (grid, circle, arc, line), solids (box, cylinder, pyramid, torus, uv sphere, icosphere, platonic), surfaces (surface, metaballs, skin), modifiers (transform, array, join, lift), math (math, vector) and view. Each view node chooses its colour and whether faces show flat, smooth or as a glow.
+Nodes: sources (number, time, range, noise), generators (grid, circle, arc, line), solids (box, cylinder, pyramid, torus, uv sphere, icosphere, platonic), surfaces (surface, metaballs, skin), modifiers (transform, array, join, lift, edit), math (math, vector) and view. Each view node chooses its colour and whether faces show flat, smooth or as a glow.
 
 ## Script node
 
@@ -32,6 +32,19 @@ verts.loop(range(N).map(i => {
 - `out name geo`: write with `.point(p)`, `.edge(a, b)`, `.line(pts)`, `.loop(pts)`, `.face(...pts)` (points or indices), `.add(geo)`, or assign `mesh(verts, edges, faces)`. `out name list`: an array to push to.
 - Geo inputs offer `.points`, `.edges`, `.faces`, `.count`, `.first`, and iterate as points.
 - In scope: maths functions, `PI`, `TAU`, `range`, `zip`, `lerp`, `clamp`, `fract`, `rand(i, seed)`, `noise(x, seed)`, `mesh`, `time`, `print`, and `state` (kept between runs until the code changes).
+
+## Hand editing
+
+Put an **edit** node on a geo wire and select it: its vertices become pickable in the 3D view. Moved vertices are kept as offsets, so they follow when the shape upstream changes; **P** pins vertices at an absolute place, cut loose from upstream. `amount` blends between the upstream and edited shapes.
+
+| 3D view, edit node selected | |
+|---|---|
+| click / Shift+click | pick vertices |
+| B, then drag | box select (Ctrl on release removes) |
+| A / Alt+A | all or none / none |
+| G R S | move, rotate, scale; then X Y Z to constrain, digits for an exact value, click or Enter to keep, Esc to cancel |
+| P | pin / unpin |
+| Alt+G | forget the edits on the selection |
 
 ## Keys
 

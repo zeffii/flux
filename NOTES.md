@@ -4,6 +4,8 @@ Done and tested (`npm test`): `src/core` (geo, graph with in-place load, demo gr
 
 Script node (`src/nodes/script.js`, panel `src/ui/code.js`, colouring `src/ui/highlight.js`): ports come per node from the code header via `defOf(node)`; `graph.setCode` drops links that no longer fit.
 
-Next ideas: multiplexing (wires carrying several objects, nodes and scripts running once per object, SNLite-style nesting levels), a sync link to Wax (beat/time from the tracker).
+Edit node (`src/nodes/edit.js`, tool `src/ui/editing.js`, maths `src/core/xform.js`): edits live in `vals['#edits']` as `{ n, d: {i: offset}, p: {i: position} }`, keyed by vertex index.
+
+Next ideas: edit layer 2 (add vertex, connect edge, fill face, delete mask), a freeze node (snapshot + re-pull), proportional editing, stable ids for edits across topology changes, multiplexing (wires carrying several objects, nodes and scripts running once per object, SNLite-style nesting levels), a sync link to Wax (beat/time from the tracker).
 
 Plan: Z up like Blender, every input is a parameter, wires carry lists of numbers or geo (verts + edges). A Blender or Rust back end may come later.

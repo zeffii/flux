@@ -5,6 +5,7 @@ import { NODES, CATEGORIES, COLOURS } from './nodes/index.js';
 import { Editor } from './ui/editor.js';
 import { Viewer } from './ui/viewer.js';
 import { CodePanel } from './ui/code.js';
+import { EditTool } from './ui/editing.js';
 import { trustScripts, scriptsTrusted } from './nodes/script.js';
 import { vcount, fcount } from './core/geo.js';
 
@@ -25,6 +26,8 @@ const saveSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(save, 3
 const menu = makeMenu();
 const editor = new Editor($('editor'), graph, { onChange: saveSoon, onMenu: menu.open, onMenuClose: menu.close });
 const viewer = new Viewer($('viewer'));
+const editTool = new EditTool(viewer, graph, editor, $('vhud'), $('vbox'));
+window.flux = { graph, editor, viewer, editTool };   // handy from the browser console
 const code = new CodePanel($('editor').parentElement, graph, editor, { onSave: () => download(), onTrust: () => { save(); toast('scripts running'); } });
 requestAnimationFrame(() => editor.fit());
 
@@ -93,6 +96,10 @@ function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (playing) time += dt;
   const { views, results } = graph.evaluate({ time });
+  // Hand editing follows the selected (else active) edit node.
+  const one = editor.sel.size === 1 ? graph.nodes.get([...editor.sel][0]) : null, act = graph.nodes.get(editor.active);
+  const en = [one, act].find(n => n?.type === 'edit') ?? null;
+  editTool.target(en, en ? results.get(en.id)?.ins[0] : null);
   // The editor only needs redrawing when numbers it shows have changed: time-driven nodes change every frame.
   editor.info = results;
   if (playing && [...results.values()].some(r => r.dyn)) editor.dirty = true;

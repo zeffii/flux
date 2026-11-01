@@ -197,3 +197,31 @@ pts.loop([[0, 1, 0], [1, 1, 0], [1, 2, 0]])`;
   const h = Graph.from(JSON.parse(JSON.stringify(g))); assert.equal(defOf([...h.nodes.values()][0]).outputs.length, defOf(s).outputs.length, 'code saves with the graph');
   console.log('ok: script templates');
 }
+
+{ // edit node: offsets follow upstream, pins don't, amount blends, count changes warn
+  const { EDITS, moved, togglePin, cleared, editsOf } = await import('../src/nodes/edit.js');
+  const { rotate, scaleAbout, centre } = await import('../src/core/xform.js');
+  const g = new Graph(), line = g.add('line', 0, 0, { count: 3, length: 2 }), ed = g.add('edit');
+  g.connect(line.id, 0, ed.id, 0);
+  const up = first(run(g), line.id), node = g.nodes.get(ed.id);
+  assert.deepEqual(Array.from(first(run(g), ed.id).v), Array.from(up.v), 'no edits passes through');
+  node.vals[EDITS] = moved(up, editsOf(node), [0, 2], Float32Array.from([-1, 0, 1, 1, 0, 1])); g.touch();
+  let out = first(run(g), ed.id); assert.equal(out.v[2], 1); assert.equal(out.v[8], 1); assert.equal(out.v[5], 0);
+  assert.equal(out.e.length, up.e.length, 'topology kept');
+  node.vals[EDITS] = togglePin(up, editsOf(node), [2]); g.touch();
+  g.nodes.get(line.id).vals.length = 4; g.touch(); out = first(run(g), ed.id);
+  assert.equal(out.v[0], -2, 'offset vertex follows upstream (x now -2)'); assert.equal(out.v[2], 1, 'and keeps its lift');
+  assert.equal(out.v[6], 1, 'pinned vertex stays at x 1'); assert.equal(out.v[8], 1);
+  node.vals.amount = 0.5; g.touch(); out = first(run(g), ed.id); assert.ok(Math.abs(out.v[2] - 0.5) < 1e-6, 'half way');
+  node.vals.amount = 1;
+  node.vals[EDITS] = cleared(up, editsOf(node), [0]); g.touch(); out = first(run(g), ed.id); assert.equal(out.v[2], 0, 'cleared vertex is back on upstream');
+  assert.equal(defOf(node).status(node), null);
+  g.nodes.get(line.id).vals.count = 5; g.touch(); run(g); assert.match(defOf(node).status(node).warn, /3 vertices.*5/);
+  const unpinned = togglePin(up, editsOf(node), [2]); assert.ok(!unpinned.p[2] && unpinned.d[2], 'unpin keeps the place as an offset');
+
+  const r = rotate([1, 0, 0], [0, 0, 0], [0, 0, 1], Math.PI / 2); assert.ok(Math.abs(r[0]) < 1e-9 && Math.abs(r[1] - 1) < 1e-9, 'right-handed about Z');
+  assert.deepEqual(scaleAbout([2, 2, 2], [1, 1, 1], 3, [0, 0, 1]), [2, 2, 4]); assert.deepEqual(scaleAbout([2, 0, 0], [0, 0, 0], 2), [4, 0, 0]);
+  assert.deepEqual(centre(Float32Array.from([0, 0, 0, 2, 4, 6]), [0, 1]), [1, 2, 3]);
+  const h = Graph.from(JSON.parse(JSON.stringify(g))); assert.deepEqual(h.nodes.get(ed.id).vals[EDITS], node.vals[EDITS], 'edits save with the graph');
+  console.log('ok: edit node');
+}

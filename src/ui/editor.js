@@ -217,7 +217,7 @@ export class Editor {
     x.font = '600 12px ui-sans-serif, system-ui, sans-serif'; x.textBaseline = 'middle'; x.fillStyle = INK.text; x.textAlign = 'left';
     x.fillText(d.label ?? d.type, n.x + 12, n.y + HEAD / 2 + 0.5);
     const st = d.status?.(n);
-    if (st?.error || st?.waiting) { x.beginPath(); x.arc(n.x + W - 14, n.y + HEAD / 2, 4, 0, Math.PI * 2); x.fillStyle = st.error ? '#f0566b' : INK.dim; x.fill(); }
+    if (st?.error || st?.warn || st?.waiting) { x.beginPath(); x.arc(n.x + W - 14, n.y + HEAD / 2, 4, 0, Math.PI * 2); x.fillStyle = st.error ? '#f0566b' : st.warn ? '#e8a83a' : INK.dim; x.fill(); }
     const res = this.info.get(n.id);
     d.outputs.forEach((o, i) => {
       const q = this.outPos(n, i), linked = this.g.links.some(l => l.a === n.id && l.ao === i);

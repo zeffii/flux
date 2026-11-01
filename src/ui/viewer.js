@@ -53,7 +53,7 @@ export class Viewer {
     this.canvas = canvas;
     this.gl = canvas.getContext('webgl2', { antialias: true, alpha: false, depth: true });
     this.cam = { yaw: -0.9, pitch: 0.55, dist: 14, target: [0, 0, 0] };
-    this.slots = new Map();
+    this.slots = new Map(); this.tool = null; this.mvp = null;
     if (!this.gl) return;
     const gl = this.gl;
     const program = (vs, fs) => {
@@ -65,6 +65,8 @@ export class Viewer {
     };
     this.lp = program(LVS, LFS); this.fp = program(FVS, FFS);
     this.floor = this.makeFloor();
+    this.ovao = gl.createVertexArray(); this.obuf = gl.createBuffer();
+    gl.bindVertexArray(this.ovao); gl.bindBuffer(gl.ARRAY_BUFFER, this.obuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0); gl.bindVertexArray(null);
     this.attach();
   }
 
@@ -104,23 +106,54 @@ export class Viewer {
     gl.bindVertexArray(null);
   }
 
+  // Orbit by dragging, pan with Shift or the right button, zoom with the wheel. An edit tool, when set, gets
+  // clicks (a press and release without dragging), keys, and the pointer while it runs a move/rotate/scale.
   attach() {
-    const c = this.canvas; let last = null;
-    c.addEventListener('pointerdown', e => { last = [e.clientX, e.clientY]; c.setPointerCapture(e.pointerId); });
-    c.addEventListener('pointerup', () => { last = null; });
+    const c = this.canvas; let down = null, last = null;
+    c.tabIndex = 0;
+    const pos = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    c.addEventListener('pointerdown', e => {
+      c.focus(); const p = pos(e);
+      if (this.tool?.pointerDown?.(p, e)) return;
+      down = { p, moved: false, button: e.button, shift: e.shiftKey }; last = [e.clientX, e.clientY]; c.setPointerCapture(e.pointerId);
+    });
     c.addEventListener('pointermove', e => {
-      if (!last) return;
+      const p = pos(e);
+      if (this.tool) this.tool.mouse = p;
+      if (this.tool?.pointerMove?.(p, e)) return;
+      if (!down) return;
+      if (!down.moved && Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) < 4) return;
+      down.moved = true;
       const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY];
       const cam = this.cam;
       if (e.shiftKey || e.buttons & 4 || e.buttons & 2) {   // pan in the view plane
-        const s = cam.dist * 0.0016, cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
-        const right = [-sy, cy, 0], up = [-sp * cy, -sp * sy, cp];
+        const s = cam.dist * 0.0016, { right, up } = this.basis();
         for (let i = 0; i < 3; i++) cam.target[i] += (-right[i] * dx + up[i] * dy) * s;
       } else { cam.yaw -= dx * 0.008; cam.pitch = Math.max(-1.5, Math.min(1.5, cam.pitch + dy * 0.008)); }
     });
+    c.addEventListener('pointerup', e => {
+      const d = down; down = null;
+      if (this.tool?.pointerUp?.(pos(e), e)) return;
+      if (d && !d.moved && d.button === 0) this.tool?.click?.(d.p, d.shift);
+    });
     c.addEventListener('contextmenu', e => e.preventDefault());
     c.addEventListener('wheel', e => { e.preventDefault(); this.cam.dist = Math.max(1.5, Math.min(80, this.cam.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
-    c.addEventListener('dblclick', () => { this.cam.target = [0, 0, 0]; });
+    c.addEventListener('dblclick', () => { if (!this.tool?.busy) this.cam.target = [0, 0, 0]; });
+    c.addEventListener('keydown', e => { if (this.tool?.key?.(e)) { e.preventDefault(); e.stopPropagation(); } });
+  }
+
+  // Camera directions in world space: right and up on screen, and towards the camera.
+  basis() {
+    const { yaw, pitch } = this.cam, cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    return { right: [-sy, cy, 0], up: [-sp * cy, -sp * sy, cp], back: [cp * cy, cp * sy, sp] };
+  }
+
+  // A world point on screen, in CSS pixels from the canvas corner (null when behind the camera).
+  project(p) {
+    const m = this.mvp; if (!m) return null;
+    const x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
+    if (w <= 1e-6) return null;
+    return [(x / w + 1) / 2 * this.canvas.clientWidth, (1 - y / w) / 2 * this.canvas.clientHeight];
   }
 
   resize() {
@@ -135,7 +168,7 @@ export class Viewer {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     gl.clearColor(0.043, 0.051, 0.063, 1); gl.depthMask(true); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const cp = Math.cos(cam.pitch), eye = [cam.target[0] + cam.dist * cp * Math.cos(cam.yaw), cam.target[1] + cam.dist * cp * Math.sin(cam.yaw), cam.target[2] + cam.dist * Math.sin(cam.pitch)];
-    const mvp = mul(perspective(0.8, this.canvas.width / this.canvas.height, 0.05, 300), lookAt(eye, cam.target, [0, 0, 1]));
+    const mvp = this.mvp = mul(perspective(0.8, this.canvas.width / this.canvas.height, 0.05, 300), lookAt(eye, cam.target, [0, 0, 1]));
 
     // Drop buffers of views that are gone; upload the rest.
     const live = new Set(views.map(v => v.id));
@@ -165,6 +198,16 @@ export class Viewer {
       gl.bindVertexArray(s.lines);
       if (v.lines && s.ne) { gl.uniform1f(lp.u.round_, 0); gl.uniform1f(lp.u.size, 1); gl.uniform4f(lp.u.col, r, g, b, v.faces === 1 || v.faces === 2 ? 0.5 : 0.8); gl.drawElements(gl.LINES, s.ne, gl.UNSIGNED_INT, 0); }
       if (v.size > 0) { gl.uniform1f(lp.u.round_, 1); gl.uniform1f(lp.u.size, v.size * d); gl.uniform4f(lp.u.col, r, g, b, 0.95); gl.drawArrays(gl.POINTS, 0, s.nv); }
+    }
+    // The edit tool's vertices, always on top: plain, edited, pinned, selected.
+    const ov = this.tool?.overlay?.();
+    if (ov) {
+      gl.disable(gl.DEPTH_TEST); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.bindVertexArray(this.ovao); gl.bindBuffer(gl.ARRAY_BUFFER, this.obuf); gl.uniform1f(lp.u.round_, 1);
+      for (const [pts, size, col] of [[ov.plain, 5, [0.85, 0.88, 0.92, 0.9]], [ov.edited, 6, [0.55, 0.85, 1, 1]], [ov.pinned, 7, [1, 0.45, 0.6, 1]], [ov.selected, 8, [1, 0.62, 0.15, 1]]]) {
+        if (!pts.length) continue;
+        gl.bufferData(gl.ARRAY_BUFFER, pts, gl.DYNAMIC_DRAW); gl.uniform1f(lp.u.size, size * d); gl.uniform4f(lp.u.col, ...col); gl.drawArrays(gl.POINTS, 0, pts.length / 3);
+      }
     }
     gl.depthMask(true); gl.bindVertexArray(null);
   }
